@@ -7,7 +7,7 @@ The project's requirements:
 
 ## Quickstart
 
-1. **Install dependencies:**
+1. **Install dependencies and run the app:**
 
     ```bash
     npm install
