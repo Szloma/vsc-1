@@ -87,13 +87,16 @@ class rangedWeapon {
   }
 }
 
-class fireballTimer{
-
-}
-
+//todo
 class Inventory{
   constructor(){
     this.inventory = [];
+  }
+}
+
+class GroundItemsLayer{
+  constructor(){
+    //todo
   }
 }
 
@@ -107,7 +110,7 @@ class randomFireball{
     this.damage = 10;
     this.durationTime = duration;
     this.duration = duration; 
-    console.log(this.duration)
+    //console.log(this.duration)
     this.hitbox = new PIXI.Rectangle(
       this.sprite.x - this.sprite.width / 2,
       this.sprite.y - this.sprite.height / 2,
@@ -117,7 +120,7 @@ class randomFireball{
   this.direction = this.calculateDirection()
   }
   calculateDirection(){
-    console.log(getRandomNumberX())
+    //console.log(getRandomNumberX())
     let dx = getRandomNumberX() - this.sprite.x;
     let dy = getRandomNumberY() - this.sprite.y;
     const length = Math.sqrt(dx * dx + dy * dy);
@@ -402,8 +405,36 @@ class EnemyContainer {
       this.container.addChild(enemy.sprite);
   }
   spawnEnemy() {
-    const randomX = Math.random() * app.screen.width; 
-    const randomY = Math.random() * app.screen.height; 
+    const spawnMargin = 50;
+    var edge = Math.floor(Math.random() * 4) + 1;
+    var randomX = 0;
+    var randomY = 0;
+    switch (edge) {
+      case 1:
+        randomX = -spawnMargin;
+        randomY = getRandomNumberY()
+        break;
+      case 2:
+        randomX = getRandomNumberX();
+        randomY = app.screen.height + spawnMargin
+        break
+      case 3:
+        randomX = app.screen.width+ spawnMargin;
+        randomY = getRandomNumberY();
+        break;
+      case 4:
+        randomX = getRandomNumberX();
+        randomY = -spawnMargin;
+        break;
+      default:
+        var randomX = 0;
+        var randomY = 0;
+    }
+
+    
+    console.log("spawnsite")
+    console.log(randomX)
+    console.log(randomY)
     const newEnemy = new Enemy("enemy1.png", 1, randomX, randomY);
     this.addEnemy(newEnemy);
 }
