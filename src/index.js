@@ -495,16 +495,14 @@ class projectileLayer{
 class Map{
   constructor(backTexture){
 
-    this.enemy1 = new Enemy('enemy2.png', 1, 100,100);
+    this.enemy1 = new Enemy('enemy1.png', 1, -100,-100);
     this.randomfireball = new randomFireball(40)
     //tmp
     this.EnemyTimerDuration = 50
     this.EnemyTimer = this.EnemyTimerDuration;
 
     this.EnemyContainer = new EnemyContainer()
-    this.EnemyContainer.spawnEnemy(this.enemy1)
-    this.EnemyContainer.spawnEnemy(this.enemy1)
-    this.EnemyContainer.spawnEnemy(this.enemy1)
+
     this.player = new Player('player.png', 5);
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
