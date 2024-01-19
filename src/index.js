@@ -107,7 +107,7 @@ class randomFireball{
     this.sprite.x = app.screen.width/2
     this.sprite.y = app.screen.height/2
     this.speed = 10;
-    this.damage = 10;
+    this.damage = 50;
     this.durationTime = duration;
     this.duration = duration; 
     //console.log(this.duration)
