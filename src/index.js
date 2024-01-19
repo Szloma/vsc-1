@@ -290,7 +290,7 @@ class GameOverScreen{
         fill: '#ffffff',
         fontSize: 24,
     });
-    const instructions = new PIXI.Text('Press Enter to restart', instructionsStyle);
+    const instructions = new PIXI.Text('Press F5 to restart', instructionsStyle);
     instructions.anchor.set(0.5);
     instructions.x = app.screen.width / 2;
     instructions.y = app.screen.height / 2;
