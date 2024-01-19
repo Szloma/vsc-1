@@ -24,6 +24,279 @@ function getRandomNumberY() {
 }
 
 
+
+class Weapons {
+  constructor(){
+    this.Weapons = [];
+  }
+}
+
+class rangedWeapon {
+  constructor()
+  {
+    this.projectiles = [];
+  }
+  shoot(player, target){
+  }
+}
+
+//todo
+class Inventory{
+  constructor(){
+    this.inventory = [];
+  }
+}
+//======================================================================================
+
+// Ground layer
+
+//
+//trzeba poprawic bronki przed zrobieniem tego
+class itemTypes {
+  static getHPrefill() {
+      return {
+          spriteTexture: "item1.png",
+          speed: 0,
+          health: 100,
+      };
+  }
+
+  static getRandomItem() {
+    const itemTypeList = [
+        this.getHPrefill()
+    ];
+
+    const randomIndex = Math.floor(Math.random() * itemTypeList.length);
+    return itemTypeList[randomIndex];
+}
+
+}
+
+class GroundItemsLayer{
+  constructor(){
+    this.container = new PIXI.Container();
+    this.items = [];
+    this.container.x = 0; 
+    this.container.y = 0; 
+    app.stage.addChild(this.container)
+  }
+  update(delta){
+
+  }
+  move(xDelta, yDelta, speed) {
+    const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
+
+    if (length !== 0) {
+      const vx = (xDelta / length) * speed;
+      const vy = (yDelta / length) * speed;
+      this.container.x += vx;
+      this.container.y += vy;
+    }
+  }
+  spawnItem() {
+    const spawnMargin = 50;
+    var edge = Math.floor(Math.random() * 4) + 1;
+    var randomX = 90;
+    var randomY = 90;
+
+
+    let enem = itemTypes.getRandomItem();
+    const newEnemy = new GroundItem 
+    this.addEnemy(newEnemy);
+}
+
+  update() {
+    
+  }
+  removeEnemy(enemy){
+    const index = this.enemies.indexOf(enemy);
+    if (index !== -1){
+      this.enemies.splice(index,1)
+      this.container.removeChild(enemy.sprite)
+    }
+  }
+  
+
+
+}
+class GroundItem{
+  constructor(texture){
+    this.sprite = PIXI.Sprite.from(texture);
+    this.sprite.anchor.set(0.5);
+    this.sprite.x =x
+    this.sprite.y =y
+    this.hitbox = new PIXI.Rectangle(x, y, 10, 10);
+    app.stage.addChild(this.sprite);
+  }
+  update(delta){
+
+  }
+}
+
+
+//======================================================================================
+
+// Weapons
+
+//
+class Projectile{
+  constructor(sprite){
+    
+  }
+}
+class Weapon{
+  constructor(speed, damage, projectileLayer){
+  this.sprite.x = app.screen.width/2
+  this.sprite.y = app.screen.height/2
+  }
+  
+  use(){
+    this.projectileLayer.addProjectile()
+  }
+
+}
+
+
+class Armory{
+
+}
+class projectileLayer{
+  constructor(){
+    this.container = new PIXI.Container();
+    this.projectiles = [];
+    this.container.x = 0; 
+    this.container.y = 0; 
+    app.stage.addChild(this.container)
+  }
+  addProjectile(projectile){
+    this.projectiles.push(projectile)
+    this.container.addChild(projectile.sprite)
+  }
+  addNewProjectile(){
+    const np = new randomFireball(50);
+    this.projectiles.push(np);
+    this.container.addChild(np.sprite)
+  }
+  fire(){
+    this.addNewProjectile();
+  }
+  update(delta){
+    this.projectiles.forEach((projectile)=>{
+      projectile.update(delta);
+    })
+  }
+  removeProjectile(projectile){
+    const index = this.projectiles.indexOf(projectile);
+    if (index !== -1){
+      this.projectiles.splice(index,1)
+      this.container.removeChild(projectile.sprite)
+      this.container.removeChild(projectile.hitbox)
+    }
+  }
+}
+
+
+class randomFireball{
+  constructor(duration){
+    this.sprite = PIXI.Sprite.from('fireball.png')
+    this.sprite.anchor.set(0.5)
+    this.sprite.x = app.screen.width/2
+    this.sprite.y = app.screen.height/2
+    this.speed = 10;
+    this.damage = 50;
+    this.durationTime = duration;
+    this.duration = duration; 
+    this.hitbox = new PIXI.Rectangle(
+      this.sprite.x - this.sprite.width / 2,
+      this.sprite.y - this.sprite.height / 2,
+      10,10
+  );
+  app.stage.addChild(this.sprite)
+  this.direction = this.calculateDirection()
+  }
+  calculateDirection(){
+    //dodac celowanie
+    let dx = 0 - this.sprite.x;
+    let dy = 0;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
+  }
+  updateDirection(){
+    this.direction = this.calculateDirection();
+  }
+  update(delta){
+    //console.log(this.sprite.x)
+    this.sprite.x += this.direction.vx;
+    this.sprite.y += this.direction.vy;
+    this.hitbox.x = this.sprite.x;
+    this.hitbox.y = this.sprite.y;
+    this.duration -= delta;
+    if (this.duration <= 0) {
+      this.updateDirection()
+        this.reset();
+    }
+  }
+  destroy() {
+    
+  if (this.sprite.parent) {
+      this.sprite.parent.removeChild(this.sprite);
+  } 
+  //this.direction = null;
+  this.duration =null
+}
+  reset(){
+   
+    this.sprite.x = app.screen.width/2
+    this.sprite.y = app.screen.height/2
+    this.duration = this.durationTime;
+    this.show()
+  }
+  softreset(){
+    this.sprite.x = app.screen.width/2
+    this.sprite.y = app.screen.height/2
+  }
+  hide(){
+    this.sprite.visible = false;
+  }
+  show(){
+    this.sprite.visible = true;
+  }
+}
+
+//======================================================================================
+
+// Player
+
+//
+class Player {
+  constructor(texture, speed){
+    this.sprite = PIXI.Sprite.from(texture);
+    this.sprite.anchor.set(0.5);
+    this.sprite.x = app.screen.width / 2;
+    this.sprite.y = app.screen.height / 2;
+    this.speed = speed;
+    this.HP = new HP(100,50);
+    this.inventory = new Inventory(); // to do
+
+    this.hitbox = new PIXI.Rectangle(
+      this.sprite.x - this.sprite.width / 2,
+      this.sprite.y - this.sprite.height / 2,
+      10,10
+  );
+
+    app.stage.addChild(this.sprite);
+
+    
+  }
+  update(delta){
+    this.sprite.rotation+= 0.1 * delta;
+    
+  }
+  getPlayer(){
+    return this.sprite
+  }
+  
+}
 class HP {
   constructor(maxHP, widthPercent){
     this.maxHP = maxHP;
@@ -72,133 +345,12 @@ class HP {
   }
 
 }
-class Weapons {
-  constructor(){
-    this.Weapons = [];
-  }
-}
+//======================================================================================
 
-class rangedWeapon {
-  constructor()
-  {
-    this.projectiles = [];
-  }
-  shoot(player, target){
-  }
-}
+// ENEMIES
 
-//todo
-class Inventory{
-  constructor(){
-    this.inventory = [];
-  }
-}
+//
 
-class GroundItemsLayer{
-  constructor(){
-    //todo
-  }
-}
-
-class randomFireball{
-  constructor(duration){
-    this.sprite = PIXI.Sprite.from('fireball.png')
-    this.sprite.anchor.set(0.5)
-    this.sprite.x = app.screen.width/2
-    this.sprite.y = app.screen.height/2
-    this.speed = 10;
-    this.damage = 50;
-    this.durationTime = duration;
-    this.duration = duration; 
-    //console.log(this.duration)
-    this.hitbox = new PIXI.Rectangle(
-      this.sprite.x - this.sprite.width / 2,
-      this.sprite.y - this.sprite.height / 2,
-      10,10
-  );
-  app.stage.addChild(this.sprite)
-  this.direction = this.calculateDirection()
-  }
-  calculateDirection(){
-    //console.log(getRandomNumberX())
-    //potencjalnie zaimplementować celowanie
-    let dx = 0 - this.sprite.x;
-    let dy = 0;
-    const length = Math.sqrt(dx * dx + dy * dy);
-    return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
-  }
-  updateDirection(){
-    this.direction = this.calculateDirection();
-  }
-  update(delta){
-    //console.log(this.sprite.x)
-    this.sprite.x += this.direction.vx;
-    this.sprite.y += this.direction.vy;
-    this.hitbox.x = this.sprite.x;
-    this.hitbox.y = this.sprite.y;
-    this.duration -= delta;
-    if (this.duration <= 0) {
-      this.updateDirection()
-        this.reset();
-    }
-  }
-  destroy() {
-    
-  if (this.sprite.parent) {
-      this.sprite.parent.removeChild(this.sprite);
-  } 
-  //this.direction = null;
-  this.duration =null
-}
-  reset(){
-   
-    this.sprite.x = app.screen.width/2
-    this.sprite.y = app.screen.height/2
-    this.duration = this.durationTime;
-    this.show()
-  }
-  softreset(){
-    this.sprite.x = app.screen.width/2
-    this.sprite.y = app.screen.height/2
-  }
-  hide(){
-    this.sprite.visible = false;
-  }
-  show(){
-    this.sprite.visible = true;
-  }
-}
-
-
-class Player {
-  constructor(texture, speed){
-    this.sprite = PIXI.Sprite.from(texture);
-    this.sprite.anchor.set(0.5);
-    this.sprite.x = app.screen.width / 2;
-    this.sprite.y = app.screen.height / 2;
-    this.speed = speed;
-    this.HP = new HP(100,50);
-    this.inventory = new Inventory(); // to do
-
-    this.hitbox = new PIXI.Rectangle(
-      this.sprite.x - this.sprite.width / 2,
-      this.sprite.y - this.sprite.height / 2,
-      10,10
-  );
-
-    app.stage.addChild(this.sprite);
-
-    
-  }
-  update(delta){
-    this.sprite.rotation+= 0.1 * delta;
-    
-  }
-  getPlayer(){
-    return this.sprite
-  }
-  
-}
 class EnemyHP{
   constructor(maxHP){
     this.maxHP = maxHP;
@@ -222,11 +374,8 @@ class EnemyHP{
   }
 }
 
-//======================================================================================
 
-// ENEMIES
 
-//
 class enemyTypes {
   static getBasicEnemy() {
       return {
@@ -472,24 +621,21 @@ class StartMenu {
 }
 
 
-
-class projectileLayer{
-  constructor(){
-    this.container = new PIXI.Container();
-    this.projectiles = [];
-    this.container.x = 0; 
-    this.container.y = 0; 
-    app.stage.addChild(this.container)
-  }
-  addProjectile(projectile){
-    this.projectiles.push(projectile)
-    this.container.addChild(projectile.sprite)
+class automaticFiringTimer{
+  constructor(time, item){
+    this.item = item;
+    this.time = time;
+    this.timeLeft = time;
   }
   update(delta){
-    this.projectiles.forEach((projectile)=>{
-      projectile.update(delta);
-    })
+    this.timeLeft -=delta;
+    if(this.timeLeft<0){
+      this.timeLeft = this.time;
+      this.item.fire();
+    }
   }
+
+
 }
 
 
@@ -503,11 +649,17 @@ class Map{
     this.EnemyTimer = this.EnemyTimerDuration;
 
     this.EnemyContainer = new EnemyContainer()
+    this.groundLayer = new GroundItemsLayer();
 
+    //test
+  
+    
+    
     this.player = new Player('player.png', 5);
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
     this.ProjectileLayer.addProjectile(this.randomfireball)
+    this.weaponTimer = new automaticFiringTimer(10,this.ProjectileLayer)
     
   }
   drawBackground(){
@@ -516,6 +668,7 @@ class Map{
 
   
   update(delta){
+    this.weaponTimer.update(delta)
     //tmp 
     this.EnemyTimer -= delta;
     if (this.EnemyTimer <= 0) {
@@ -541,6 +694,7 @@ class Map{
     if (keys['ArrowUp']) yDelta += 1;
     if (keys['ArrowDown']) yDelta -= 1;
     this.EnemyContainer.move(xDelta, yDelta, this.player.speed);
+    this.groundLayer.move(xDelta, yDelta, this.player.speed);
 
     //this.EnemyContainer.x = Math.max(0, Math.min(app.screen.width, this.sprite.x));
     //this.EnemyContainer.y = Math.max(0, Math.min(app.screen.height, this.sprite.y));
@@ -549,16 +703,15 @@ class Map{
   checkWeaponCollisions(){
     
     for (const projectile of this.ProjectileLayer.projectiles) {
-      //console.log(this.ProjectileLayer.projectiles)
       const projectileGlobalBounds = projectile.sprite.getBounds();
         for (const enemy of this.EnemyContainer.enemies){
           const enemyGlobalBounds = enemy.sprite.getBounds();
-          //console.log(projectile.hitbox)
-          //console.log(enemy.hitbox)
           if(projectile.sprite.visible){
             if(this.hitTestRectangle(projectileGlobalBounds, enemyGlobalBounds)){
               enemy.HP.decreaseHP(projectile.damage);
-              projectile.hide()
+              //projectile.hide()
+              this.ProjectileLayer.removeProjectile(projectile)
+              //this.ProjectileLayer.addNewProjectile()
               console.log("hit")
               if(enemy.HP.currentHP ==0){
                 //console.log(enemy.HP.currentHP)
