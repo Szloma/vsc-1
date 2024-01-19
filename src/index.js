@@ -121,9 +121,9 @@ class randomFireball{
   }
   calculateDirection(){
     //console.log(getRandomNumberX())
-    //tu jest bug, potwory sie spawnują w złym miejscu kiedy gracz sie ruszy
-    let dx = getRandomNumberX() - this.sprite.x;
-    let dy = getRandomNumberY() - this.sprite.y;
+    //potencjalnie zaimplementować celowanie
+    let dx = 0 - this.sprite.x;
+    let dy = 0;
     const length = Math.sqrt(dx * dx + dy * dy);
     return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
   }
