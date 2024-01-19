@@ -421,20 +421,20 @@ class EnemyContainer {
     var randomY = 0;
     switch (edge) {
       case 1:
-        randomX = -spawnMargin;
-        randomY = getRandomNumberY()
+        randomX = -spawnMargin +this.container.x;
+        randomY = getRandomNumberY()+this.container.y
         break;
       case 2:
-        randomX = getRandomNumberX();
-        randomY = app.screen.height + spawnMargin
+        randomX = getRandomNumberX() +this.container.x;
+        randomY = app.screen.height + spawnMargin +this.container.y
         break
       case 3:
-        randomX = app.screen.width+ spawnMargin;
-        randomY = getRandomNumberY();
+        randomX = app.screen.width+ spawnMargin +this.container.x;
+        randomY = getRandomNumberY() +this.container.y
         break;
       case 4:
-        randomX = getRandomNumberX();
-        randomY = -spawnMargin;
+        randomX = getRandomNumberX() +this.container.x;
+        randomY = -spawnMargin +this.container.y
         break;
       default:
         var randomX = 0;
