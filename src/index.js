@@ -222,15 +222,49 @@ class EnemyHP{
   }
 }
 
+//======================================================================================
+
+// ENEMIES
+
+//
+class enemyTypes {
+  static getBasicEnemy() {
+      return {
+          spriteTexture: "enemy1.png",
+          speed: 2,
+          health: 100,
+      };
+  }
+
+  static getZombie() {
+      return {
+          spriteTexture: "zombie.png",
+          speed: 1,
+          health: 150,
+      };
+  }
+  static getRandomEnemy() {
+    const enemyTypeList = [
+        this.getBasicEnemy(),
+        this.getZombie(),
+    ];
+
+    const randomIndex = Math.floor(Math.random() * enemyTypeList.length);
+    return enemyTypeList[randomIndex];
+}
+
+}
+
+
 class Enemy {
-  constructor(texture, speed, x, y){
+  constructor(texture, speed, hp, x, y){
     this.sprite = PIXI.Sprite.from(texture);
     this.sprite.anchor.set(0.5);
     this.sprite.x =x
     this.sprite.y =y
     this.hitbox = new PIXI.Rectangle(x, y, 10, 10);
     this.speed = speed;
-    this.HP = new EnemyHP(100)
+    this.HP = new EnemyHP(hp)
     app.stage.addChild(this.sprite);
 
   }
@@ -271,6 +305,98 @@ class Enemy {
   //this.direction = null;
   }
 }
+
+class EnemyContainer {
+  constructor() {
+      this.gameOver = false;
+      this.container = new PIXI.Container();
+      this.enemies = [];
+      this.container.x = 0; 
+      this.container.y = 0; 
+      app.stage.addChild(this.container)
+  }
+
+  addEnemy(enemy) {
+      //console.log("enemy added")
+      this.enemies.push(enemy);
+      this.container.addChild(enemy.sprite);
+  }
+  spwnEn(sprite, speed, x,y){
+    const newEnemy = new Enemy(sprite, speed, 100, randomX, randomY);
+    this.addEnemy(newEnemy);
+  }
+  enemyWave(howMany){
+    const spawnMargin = 50;
+    var edge = Math.floor(Math.random() * 4) + 1;
+    var noOfEnemies =Math.floor(Math.random() * howMany) + 1;
+  }
+  spawnEnemy() {
+    const spawnMargin = 50;
+    var edge = Math.floor(Math.random() * 4) + 1;
+    var randomX = 0;
+    var randomY = 0;
+    switch (edge) {
+      case 1:
+        randomX = -spawnMargin +this.container.x;
+        randomY = getRandomNumberY()+this.container.y
+        break;
+      case 2:
+        randomX = getRandomNumberX() +this.container.x;
+        randomY = app.screen.height + spawnMargin +this.container.y
+        break
+      case 3:
+        randomX = app.screen.width+ spawnMargin +this.container.x;
+        randomY = getRandomNumberY() +this.container.y
+        break;
+      case 4:
+        randomX = getRandomNumberX() +this.container.x;
+        randomY = -spawnMargin +this.container.y
+        break;
+      default:
+        var randomX = 0;
+        var randomY = 0;
+    }
+
+    let enem = enemyTypes.getRandomEnemy();
+    const newEnemy = new Enemy(enem.spriteTexture, enem.speed,  enem.health,randomX, randomY)
+
+    this.addEnemy(newEnemy);
+}
+
+  update() {
+    
+  }
+  removeEnemy(enemy){
+    const index = this.enemies.indexOf(enemy);
+    if (index !== -1){
+      this.enemies.splice(index,1)
+      this.container.removeChild(enemy.sprite)
+    }
+  }
+  updateX(x){
+    this.container.x +=x;
+  }
+  updateY(y){
+    this.container.y +=y;
+  }
+  move(xDelta, yDelta, speed) {
+    const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
+
+    if (length !== 0) {
+      const vx = (xDelta / length) * speed;
+      const vy = (yDelta / length) * speed;
+      this.container.x += vx;
+      this.container.y += vy;
+    }
+  }
+}
+
+//======================================================================================
+
+// GUI
+
+//
+
 class GameOverScreen{
   constructor() {
     this.container = new PIXI.Container();
@@ -344,133 +470,8 @@ class StartMenu {
     this.container.visible = true;
   }
 }
-class BackgroundTexture{
-  constructor(textures, gridWidth, gridHeight){
-    this.textures = textures;
-    this.gridWidth = gridWidth;
-    this. gridHeight = gridHeight;
-
-    this.containter = new PIXI.Container();
- 
-    app.stage.addChild(this.containter);
-    this.drawBackground();
-    this.test()
-  }
-  test(){
 
 
-    const sprite = PIXI.Sprite.from(this.textures[1]);
-    this.containter.addChild(sprite)
-
-  }
-  drawBackground(){
-    for (let i = 0; i < this.gridWidth; i++) {
-      for (let j = 0; j < this.gridHeight; j++) {
-        const randomTexture = this.textures[Math.floor(Math.random() * this.textures.length)];
-        const sprite = new PIXI.Sprite(randomTexture);
-        sprite.position.set(i * this.cellSize, j * this.cellSize);
-        container.addChild(sprite);
-      }
-    }
-  }
-}
-
-class backgroundTextureStatic{
-  constructor(texture){
-    this.sprite = new PIXI.Sprite(PIXI.Texture.from(texture));
-    this.sprite.position.set(0, 0);
-    this.sprite.scale.set(1);
-    app.stage.addChild(this.sprite)
-  }
-}
-
-const backTextures = [
-  PIXI.Texture.from('Grass1.png'),
-  PIXI.Texture.from('Grass2.png'),
-  PIXI.Texture.from('Grass3.png'),
-];
-
-class EnemyContainer {
-  constructor() {
-      this.gameOver = false;
-      this.container = new PIXI.Container();
-      this.enemies = [];
-      this.container.x = 0; 
-      this.container.y = 0; 
-      app.stage.addChild(this.container)
-  }
-
-  addEnemy(enemy) {
-      //console.log("enemy added")
-      this.enemies.push(enemy);
-      this.container.addChild(enemy.sprite);
-  }
-  spwnEn(sprite, speed, x,y){
-    const newEnemy = new Enemy(sprite, speed, randomX, randomY);
-    this.addEnemy(newEnemy);
-  }
-  enemyWave(howMany){
-    const spawnMargin = 50;
-    var edge = Math.floor(Math.random() * 4) + 1;
-    var noOfEnemies =Math.floor(Math.random() * howMany) + 1;
-  }
-  spawnEnemy() {
-    const spawnMargin = 50;
-    var edge = Math.floor(Math.random() * 4) + 1;
-    var randomX = 0;
-    var randomY = 0;
-    switch (edge) {
-      case 1:
-        randomX = -spawnMargin +this.container.x;
-        randomY = getRandomNumberY()+this.container.y
-        break;
-      case 2:
-        randomX = getRandomNumberX() +this.container.x;
-        randomY = app.screen.height + spawnMargin +this.container.y
-        break
-      case 3:
-        randomX = app.screen.width+ spawnMargin +this.container.x;
-        randomY = getRandomNumberY() +this.container.y
-        break;
-      case 4:
-        randomX = getRandomNumberX() +this.container.x;
-        randomY = -spawnMargin +this.container.y
-        break;
-      default:
-        var randomX = 0;
-        var randomY = 0;
-    }
-    const newEnemy = new Enemy("enemy1.png", 1, randomX, randomY);
-    this.addEnemy(newEnemy);
-}
-
-  update() {
-    
-  }
-  removeEnemy(enemy){
-    const index = this.enemies.indexOf(enemy);
-    if (index !== -1){
-      this.enemies.splice(index,1)
-      this.container.removeChild(enemy.sprite)
-    }
-  }
-  updateX(x){
-    this.container.x +=x;
-  }
-  updateY(y){
-    this.container.y +=y;
-  }
-  move(xDelta, yDelta, speed) {
-    const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
-
-    if (length !== 0) {
-      const vx = (xDelta / length) * speed;
-      const vy = (yDelta / length) * speed;
-      this.container.x += vx;
-      this.container.y += vy;
-    }
-  }
-}
 
 class projectileLayer{
   constructor(){
@@ -563,7 +564,7 @@ class Map{
                 //console.log(enemy.HP.currentHP)
                 //EnemyContainer.removeChild()
                 this.EnemyContainer.removeEnemy(enemy)
-                console.log("it's over")
+                //console.log("it's over")
                 //this.EnemyContainer.enemies.splice(i,1)
               }
               
