@@ -121,6 +121,7 @@ class randomFireball{
   }
   calculateDirection(){
     //console.log(getRandomNumberX())
+    //tu jest bug, potwory sie spawnują w złym miejscu kiedy gracz sie ruszy
     let dx = getRandomNumberX() - this.sprite.x;
     let dy = getRandomNumberY() - this.sprite.y;
     const length = Math.sqrt(dx * dx + dy * dy);
@@ -404,6 +405,15 @@ class EnemyContainer {
       this.enemies.push(enemy);
       this.container.addChild(enemy.sprite);
   }
+  spwnEn(sprite, speed, x,y){
+    const newEnemy = new Enemy(sprite, speed, randomX, randomY);
+    this.addEnemy(newEnemy);
+  }
+  enemyWave(howMany){
+    const spawnMargin = 50;
+    var edge = Math.floor(Math.random() * 4) + 1;
+    var noOfEnemies =Math.floor(Math.random() * howMany) + 1;
+  }
   spawnEnemy() {
     const spawnMargin = 50;
     var edge = Math.floor(Math.random() * 4) + 1;
@@ -430,11 +440,6 @@ class EnemyContainer {
         var randomX = 0;
         var randomY = 0;
     }
-
-    
-    console.log("spawnsite")
-    console.log(randomX)
-    console.log(randomY)
     const newEnemy = new Enemy("enemy1.png", 1, randomX, randomY);
     this.addEnemy(newEnemy);
 }
@@ -492,6 +497,9 @@ class Map{
 
     this.enemy1 = new Enemy('enemy2.png', 1, 100,100);
     this.randomfireball = new randomFireball(40)
+    //tmp
+    this.EnemyTimerDuration = 50
+    this.EnemyTimer = this.EnemyTimerDuration;
 
     this.EnemyContainer = new EnemyContainer()
     this.EnemyContainer.spawnEnemy(this.enemy1)
@@ -501,11 +509,21 @@ class Map{
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
     this.ProjectileLayer.addProjectile(this.randomfireball)
+    
   }
   drawBackground(){
 
   }
+
+  
   update(delta){
+    //tmp 
+    this.EnemyTimer -= delta;
+    if (this.EnemyTimer <= 0) {
+      this.EnemyContainer.spawnEnemy(this.enemy1)
+      this.EnemyTimer= this.EnemyTimerDuration;
+    }
+
     this.player.update(delta)
     this.EnemyContainer.enemies.forEach((enemy) => {
       if(enemy.currentHP!=0){
