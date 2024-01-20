@@ -156,56 +156,6 @@ class Weapon{
 }
 
 
-class Armory{
-
-}
-class projectileLayer{
-  constructor(){
-    this.container = new PIXI.Container();
-    this.projectiles = [];
-    this.container.x = 0; 
-    this.container.y = 0; 
-    app.stage.addChild(this.container)
-  }
-  addProjectile(projectile){
-    this.projectiles.push(projectile)
-    this.container.addChild(projectile.sprite)
-  }
-  addNewProjectile(){
-    const np = new randomFireball(50);
-    this.projectiles.push(np);
-    this.container.addChild(np.sprite)
-  }
-  fire(){
-    this.addNewProjectile();
-  }
-  fireProjectile(projectile){
-    this.projectiles.push(projectile)
-    this.container.addChild(projectile.sprite)
-  }
-  update(delta){
-
-    this.projectiles.forEach((projectile)=>{
-      //console.log(projectile.duration)
-      projectile.update(delta);
-      //1 to troche na skroty ale nie psuje kodu
-      if (projectile.duration <= 1) {
-        console.log(projectile.duration)
-        this.removeProjectile(projectile)
-      }
-    })
-  }
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  removeProjectile(projectile){
-    const index = this.projectiles.indexOf(projectile);
-    if (index !== -1){
-      this.projectiles.splice(index,1)
-      this.container.removeChild(projectile.sprite)
-      this.container.removeChild(projectile.hitbox)
-    }
-  }
-}
-
 
 class dagger{
   constructor(duration){
@@ -259,7 +209,7 @@ class dagger{
     this.duration -= delta;
     if (this.duration <= 0) {
       this.updateDirection()
-      this.reset();
+      //this.reset();
     }
   }
   destroy() {
@@ -290,87 +240,7 @@ class dagger{
 }
 
 
-class randomFireball{
-  constructor(duration){
-    this.sprite = PIXI.Sprite.from('fireball.png')
-    this.sprite.anchor.set(0.5)
-    this.sprite.x = app.screen.width/2
-    this.sprite.y = app.screen.height/2
-    this.speed = 10;
-    this.damage = 50;
-    this.durationTime = duration;
-    this.duration = duration; 
-    this.cooldown = 50;
-    this.hitbox = new PIXI.Rectangle(
-      this.sprite.x - this.sprite.width / 2,
-      this.sprite.y - this.sprite.height / 2,
-      10,10
-  );
-  app.stage.addChild(this.sprite)
-  this.direction = this.calculateDirection()
-  }
-  getCooldown(){
-    return this.cooldown;
-  }
-  updateCooldown(n){
-    this.cooldown = n;
-  }
-  updateDuration(duration){
-    this.durationTime = duration
-    this.duration = duration
-  }
-  getDuration(){
-    return this.durationTime;
-  }
 
-  calculateDirection(){
-    //dodac celowanie
-    let dx = 0 - this.sprite.x;
-    let dy = 0;
-    const length = Math.sqrt(dx * dx + dy * dy);
-    return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
-  }
-  updateDirection(){
-    this.direction = this.calculateDirection();
-  }
-  update(delta){
-    //console.log(this.sprite.x)
-    this.sprite.x += this.direction.vx;
-    this.sprite.y += this.direction.vy;
-    this.hitbox.x = this.sprite.x;
-    this.hitbox.y = this.sprite.y;
-    this.duration -= delta;
-    if (this.duration <= 0) {
-      this.updateDirection()
-      this.reset();
-    }
-  }
-  destroy() {
-    
-  if (this.sprite.parent) {
-      this.sprite.parent.removeChild(this.sprite);
-  } 
-  //this.direction = null;
-  this.duration =null
-}
-  reset(){
-   
-    this.sprite.x = app.screen.width/2
-    this.sprite.y = app.screen.height/2
-    this.duration = this.durationTime;
-    this.show()
-  }
-  softreset(){
-    this.sprite.x = app.screen.width/2
-    this.sprite.y = app.screen.height/2
-  }
-  hide(){
-    this.sprite.visible = false;
-  }
-  show(){
-    this.sprite.visible = true;
-  }
-}
 
 //======================================================================================
 
@@ -743,34 +613,113 @@ class simpleTimer{
   }
 
 }
-
-
-class Weapons{
-  constructor(layer){
-    this.weapons = [] // najwyzej trzeba bedzie zamienic obiekty na jakies referencje i potem dac switcha
-    this.timers = []
-    this.layer = layer;
+class randomFireball{
+  constructor(){
+    this.sprite = PIXI.Sprite.from('fireball.png')
+    this.sprite.anchor.set(0.5)
+    this.sprite.x = app.screen.width/2
+    this.sprite.y = app.screen.height/2
+    this.speed = 10;
+    this.damage = 50;
+    this.durationTime = 50;
+    this.duration = this.durationTime; 
+    this.cooldown = 50;
+    this.hitbox = new PIXI.Rectangle(
+      this.sprite.x - this.sprite.width / 2,
+      this.sprite.y - this.sprite.height / 2,
+      10,10
+  );
+  app.stage.addChild(this.sprite)
+  this.direction = this.calculateDirection()
   }
-  add(weapon){
-    this.timers.push(new simpleTimer(weapon.cooldown));
-    this.weapons.push(weapon);
-    //this.timers.push(new automaticFiringTimer(weapon.getCooldown(),layer))
-   //dconsole.log(this.timers)
+  calculateDirection(){
+    //dodac celowanie
+    let dx = 0 - this.sprite.x;
+    let dy = 0;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
+  }
+  updateDirection(){
+    this.direction = this.calculateDirection();
   }
   update(delta){
-    //.enemies.indexOf(enemy);
-    console.log(this.weapons)
-    for(let i = 0; i< this.weapons.length; i++){
-      const weapon = this.weapons[i];
-      const timer = this.timers[i];
-      if(timer.timeLeft <1){
-        this.layer.fire()
-        console.log("cyk")
-      }
-      weapon.update(delta);
-      timer.update(delta)
+    //console.log(this.sprite.x)
+    this.sprite.x += this.direction.vx;
+    this.sprite.y += this.direction.vy;
+    this.hitbox.x = this.sprite.x;
+    this.hitbox.y = this.sprite.y;
+    this.duration -= delta;
+    if (this.duration <= 0) {
+      this.updateDirection()
+      //this.reset();
     }
-    
+  }
+}
+
+class projectileLayer{
+  constructor(){
+    this.container = new PIXI.Container();
+    this.projectiles = [];
+    this.container.x = 0; 
+    this.container.y = 0; 
+    app.stage.addChild(this.container)
+  }
+  addProjectile(projectile){
+    this.projectiles.push(projectile)
+    this.container.addChild(projectile.sprite)
+  }
+  addNewProjectile(){
+    const np = new randomFireball(50);
+    this.projectiles.push(np);
+    this.container.addChild(np.sprite)
+  }
+  removeProjectile(projectile){
+    const index = this.projectiles.indexOf(projectile);
+
+    if (index !== -1){
+      this.projectiles.splice(index,1)
+      this.container.removeChild(projectile.sprite)
+      this.container.removeChild(projectile.hitbox)
+    }
+  }
+  update(delta){
+
+    this.projectiles.forEach((projectile)=>{
+      projectile.update(delta);
+      if (projectile.duration <= 1) {
+        
+        this.removeProjectile(projectile)
+      }
+    })
+  }
+}
+class WeaponWand {
+  constructor(player, projectileLayer){
+    this.player = player
+    this.projectileLayer = projectileLayer
+    this.fireRate = 10;
+    this.cooldown = this.fireRate;
+ 
+    this.timer = new PIXI.Ticker();
+    //this.timer.add(this.fireRate.bind(this));
+    //this.timer.start()
+  }
+  fire(){
+    const projectile = new randomFireball();
+    projectile.x = this.player.x;
+    projectile.y = this.player.y;
+    this.projectileLayer.addProjectile(projectile)
+  }
+  update(delta){
+    console.log(this.cooldown)
+    this.cooldown -= delta;
+
+    if (this.cooldown <= 2) {
+      console.log("updating")
+      this.fire()  
+      this.cooldown = this.fireRate
+    }
+
   }
 }
 
@@ -788,10 +737,9 @@ class Map{
     this.player = new Player('player.png', 5);
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
-    this.weapons = new Weapons(this.ProjectileLayer);
     
-    this.weapons.add(new randomFireball(50))
-    //this.weapons.add(new randomFireball(50))
+    this.weapon1 = new WeaponWand(this.player, this.ProjectileLayer)
+    this.weapon1.fire()
     
   }
   drawBackground(){
@@ -805,8 +753,10 @@ class Map{
   }
   
   update(delta){
+    this.weapon1.update(delta)
     //weapontimer
-    this.weapons.update(delta)
+    //update dzieje sie w weapons.update
+    this.ProjectileLayer.update(delta)
 
     //tmp 
     this.EnemyTimer -= delta;
@@ -822,7 +772,7 @@ class Map{
       }
  
   });
-    this.ProjectileLayer.update(delta)
+
     this.checkCollisions()
     this.checkWeaponCollisions()
     let xDelta = 0;
