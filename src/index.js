@@ -181,10 +181,18 @@ class projectileLayer{
     this.addNewProjectile();
   }
   update(delta){
+
     this.projectiles.forEach((projectile)=>{
+      //console.log(projectile.duration)
       projectile.update(delta);
+      //1 to troche na skroty ale nie psuje kodu
+      if (projectile.duration <= 1) {
+        console.log(projectile.duration)
+        this.removeProjectile(projectile)
+      }
     })
   }
+  //////////////////////////////////////////////////////////////////////////////////////////////////
   removeProjectile(projectile){
     const index = this.projectiles.indexOf(projectile);
     if (index !== -1){
@@ -206,6 +214,7 @@ class randomFireball{
     this.damage = 50;
     this.durationTime = duration;
     this.duration = duration; 
+    this.cooldown = 50;
     this.hitbox = new PIXI.Rectangle(
       this.sprite.x - this.sprite.width / 2,
       this.sprite.y - this.sprite.height / 2,
@@ -214,6 +223,20 @@ class randomFireball{
   app.stage.addChild(this.sprite)
   this.direction = this.calculateDirection()
   }
+  getCooldown(){
+    return this.cooldown;
+  }
+  updateCooldown(n){
+    this.cooldown = n;
+  }
+  updateDuration(duration){
+    this.durationTime = duration
+    this.duration = duration
+  }
+  getDuration(){
+    return this.durationTime;
+  }
+
   calculateDirection(){
     //dodac celowanie
     let dx = 0 - this.sprite.x;
@@ -233,7 +256,7 @@ class randomFireball{
     this.duration -= delta;
     if (this.duration <= 0) {
       this.updateDirection()
-        this.reset();
+      this.reset();
     }
   }
   destroy() {
@@ -323,7 +346,7 @@ class HP {
       const percentage = calculatePercentage(this.HP, this.maxHP)
       const barWidth = calculateAmountFromPercentage(percentage, this.barWidth)
       this.hpBarFront.width = barWidth;
-      console.log(this.HP)
+   
       if(this.HP ==0){
         this.dead = true;
       }
@@ -626,8 +649,9 @@ class automaticFiringTimer{
     this.item = item;
     this.time = time;
     this.timeLeft = time;
-  }
+  }///////////////////////////////////////////////////////////////////////////////////////////////////
   update(delta){
+
     this.timeLeft -=delta;
     if(this.timeLeft<0){
       this.timeLeft = this.time;
@@ -637,6 +661,7 @@ class automaticFiringTimer{
 
 
 }
+
 
 
 class Map{
@@ -659,16 +684,26 @@ class Map{
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
     this.ProjectileLayer.addProjectile(this.randomfireball)
-    this.weaponTimer = new automaticFiringTimer(10,this.ProjectileLayer)
+    this.wearponTimers = [];
+    this.weaponTimer = new automaticFiringTimer(20,this.ProjectileLayer)
     
   }
   drawBackground(){
 
   }
-
+  updateWeaponTimers(delta){
+    for (const projectile of this.ProjectileLayer.projectiles) {
+      console.log(projectile)
+    }
+    this.weaponTimer.update(delta)
+  }
   
   update(delta){
-    this.weaponTimer.update(delta)
+    //weapontimer
+    this.updateWeaponTimers(delta)
+
+
+
     //tmp 
     this.EnemyTimer -= delta;
     if (this.EnemyTimer <= 0) {
@@ -712,7 +747,7 @@ class Map{
               //projectile.hide()
               this.ProjectileLayer.removeProjectile(projectile)
               //this.ProjectileLayer.addNewProjectile()
-              console.log("hit")
+             
               if(enemy.HP.currentHP ==0){
                 //console.log(enemy.HP.currentHP)
                 //EnemyContainer.removeChild()
