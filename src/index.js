@@ -47,6 +47,10 @@ class Inventory{
 
 //
 //trzeba poprawic bronki przed zrobieniem tego
+class weaponTypes{
+  
+}
+
 class itemTypes {
   static getHPrefill() {
       return {
@@ -643,28 +647,6 @@ class StartMenu {
   }
 }
 
-
-class automaticFiringTimer{
-  constructor(time, item){
-    this.item = item;
-    this.time = time;
-    this.timeLeft = time;
-  }///////////////////////////////////////////////////////////////////////////////////////////////////
-  update(delta){
-
-    this.timeLeft -=delta;
-    if(this.timeLeft<0){
-      this.timeLeft = this.time;
-      this.item.fire();
-    }
-  }
-
-
-}
-
-//potrzebny jest 1  timer na bronke
-//ale bronka to jednoczesnie pocisk ktory jest  usuwany po zuzyciu
-//trudne trudne
 class simpleTimer{
   constructor(time){
     this.time = time;
@@ -682,7 +664,7 @@ class simpleTimer{
 
 class Weapons{
   constructor(layer){
-    this.weapons = []
+    this.weapons = [] // najwyzej trzeba bedzie zamienic obiekty na jakies referencje i potem dac switcha
     this.timers = []
     this.layer = layer;
   }
@@ -694,33 +676,25 @@ class Weapons{
   }
   update(delta){
     //.enemies.indexOf(enemy);
+    console.log(this.weapons)
     for(let i = 0; i< this.weapons.length; i++){
       const weapon = this.weapons[i];
       const timer = this.timers[i];
       if(timer.timeLeft <1){
         //this.layer.fire()
-        console.log(weapon)
+        //console.log(weapon)
+        const n = this.weapons
+        //od biedy mozna zrobic liste
         const tmpWeapon = new randomFireball(50)
+        const weaponCopy = { ...weapon }
         this.layer.fireProjectile(tmpWeapon)
         //console.log(this.layer.projectiles)
         console.log("cyk")
       }
       weapon.update(delta);
       timer.update(delta)
+    }
     
-      //console.log("remaining time")
-      //console.log(timer.timeLeft)
-    }
-    /*
-    for (const weapon of this.weapons) {
-      //console.log(weapon)
-      weapon.update()
-    }
-    for (const timer of this.timers){
-      timer.update(delta)
-      console.log("remaining time")
-      console.log(timer.timeLeft)
-    }*/
   }
 }
 
@@ -741,7 +715,6 @@ class Map{
     this.weapons = new Weapons(this.ProjectileLayer);
     this.weapons.add(new randomFireball)
     this.weapons.add(new randomFireball)
-    this.weaponTimer = new automaticFiringTimer(20,this.ProjectileLayer)
     
   }
   drawBackground(){
@@ -757,9 +730,6 @@ class Map{
   update(delta){
     //weapontimer
     this.weapons.update(delta)
-    //this.updateWeaponTimers(delta)
-
-
 
     //tmp 
     this.EnemyTimer -= delta;
