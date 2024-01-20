@@ -25,11 +25,6 @@ function getRandomNumberY() {
 
 
 
-class Weapons {
-  constructor(){
-    this.Weapons = [];
-  }
-}
 
 class rangedWeapon {
   constructor()
@@ -180,6 +175,10 @@ class projectileLayer{
   fire(){
     this.addNewProjectile();
   }
+  fireProjectile(projectile){
+    this.projectiles.push(projectile)
+    this.container.addChild(projectile.sprite)
+  }
   update(delta){
 
     this.projectiles.forEach((projectile)=>{
@@ -202,6 +201,7 @@ class projectileLayer{
     }
   }
 }
+
 
 
 class randomFireball{
@@ -662,29 +662,85 @@ class automaticFiringTimer{
 
 }
 
+//potrzebny jest 1  timer na bronke
+//ale bronka to jednoczesnie pocisk ktory jest  usuwany po zuzyciu
+//trudne trudne
+class simpleTimer{
+  constructor(time){
+    this.time = time;
+    this.timeLeft = time;
+  }///////////////////////////////////////////////////////////////////////////////////////////////////
+  update(delta){
 
+    this.timeLeft -=delta;
+    if(this.timeLeft<0){
+      this.timeLeft = this.time;
+    }
+  }
+
+}
+
+class Weapons{
+  constructor(layer){
+    this.weapons = []
+    this.timers = []
+    this.layer = layer;
+  }
+  add(weapon){
+    this.timers.push(new simpleTimer(weapon.cooldown));
+    this.weapons.push(weapon);
+    //this.timers.push(new automaticFiringTimer(weapon.getCooldown(),layer))
+   //dconsole.log(this.timers)
+  }
+  update(delta){
+    //.enemies.indexOf(enemy);
+    for(let i = 0; i< this.weapons.length; i++){
+      const weapon = this.weapons[i];
+      const timer = this.timers[i];
+      if(timer.timeLeft <1){
+        //this.layer.fire()
+        console.log(weapon)
+        const tmpWeapon = new randomFireball(50)
+        this.layer.fireProjectile(tmpWeapon)
+        //console.log(this.layer.projectiles)
+        console.log("cyk")
+      }
+      weapon.update(delta);
+      timer.update(delta)
+    
+      //console.log("remaining time")
+      //console.log(timer.timeLeft)
+    }
+    /*
+    for (const weapon of this.weapons) {
+      //console.log(weapon)
+      weapon.update()
+    }
+    for (const timer of this.timers){
+      timer.update(delta)
+      console.log("remaining time")
+      console.log(timer.timeLeft)
+    }*/
+  }
+}
 
 class Map{
   constructor(backTexture){
 
-    this.enemy1 = new Enemy('enemy1.png', 1, -100,-100);
-    this.randomfireball = new randomFireball(40)
     //tmp
     this.EnemyTimerDuration = 50
     this.EnemyTimer = this.EnemyTimerDuration;
-
     this.EnemyContainer = new EnemyContainer()
     this.groundLayer = new GroundItemsLayer();
 
     //test
   
-    
-    
     this.player = new Player('player.png', 5);
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
-    this.ProjectileLayer.addProjectile(this.randomfireball)
-    this.wearponTimers = [];
+    this.weapons = new Weapons(this.ProjectileLayer);
+    this.weapons.add(new randomFireball)
+    this.weapons.add(new randomFireball)
     this.weaponTimer = new automaticFiringTimer(20,this.ProjectileLayer)
     
   }
@@ -693,14 +749,15 @@ class Map{
   }
   updateWeaponTimers(delta){
     for (const projectile of this.ProjectileLayer.projectiles) {
-      console.log(projectile)
+      //console.log(projectile)
     }
     this.weaponTimer.update(delta)
   }
   
   update(delta){
     //weapontimer
-    this.updateWeaponTimers(delta)
+    this.weapons.update(delta)
+    //this.updateWeaponTimers(delta)
 
 
 
