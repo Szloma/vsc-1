@@ -207,6 +207,88 @@ class projectileLayer{
 }
 
 
+class dagger{
+  constructor(duration){
+    this.sprite = PIXI.Sprite.from('dagger.png')
+    this.sprite.anchor.set(0.5)
+    this.sprite.x = app.screen.width/2
+    this.sprite.y = app.screen.height/2
+    this.speed = 10;
+    this.damage = 50;
+    this.durationTime = duration;
+    this.duration = duration; 
+    this.cooldown = 50;
+    this.hitbox = new PIXI.Rectangle(
+      this.sprite.x - this.sprite.width / 2,
+      this.sprite.y - this.sprite.height / 2,
+      30,10
+  );
+  app.stage.addChild(this.sprite)
+  this.direction = this.calculateDirection()
+  }
+  getCooldown(){
+    return this.cooldown;
+  }
+  updateCooldown(n){
+    this.cooldown = n;
+  }
+  updateDuration(duration){
+    this.durationTime = duration
+    this.duration = duration
+  }
+  getDuration(){
+    return this.durationTime;
+  }
+
+  calculateDirection(){
+    //dodac celowanie
+    let dx = 0 - this.sprite.x;
+    let dy = 0;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
+  }
+  updateDirection(){
+    this.direction = this.calculateDirection();
+  }
+  update(delta){
+    //console.log(this.sprite.x)
+    this.sprite.x += this.direction.vx;
+    this.sprite.y += this.direction.vy;
+    this.hitbox.x = this.sprite.x;
+    this.hitbox.y = this.sprite.y;
+    this.duration -= delta;
+    if (this.duration <= 0) {
+      this.updateDirection()
+      this.reset();
+    }
+  }
+  destroy() {
+    
+  if (this.sprite.parent) {
+      this.sprite.parent.removeChild(this.sprite);
+  } 
+  //this.direction = null;
+  this.duration =null
+}
+  reset(){
+   
+    this.sprite.x = app.screen.width/2
+    this.sprite.y = app.screen.height/2
+    this.duration = this.durationTime;
+    this.show()
+  }
+  softreset(){
+    this.sprite.x = app.screen.width/2
+    this.sprite.y = app.screen.height/2
+  }
+  hide(){
+    this.sprite.visible = false;
+  }
+  show(){
+    this.sprite.visible = true;
+  }
+}
+
 
 class randomFireball{
   constructor(duration){
@@ -662,6 +744,7 @@ class simpleTimer{
 
 }
 
+
 class Weapons{
   constructor(layer){
     this.weapons = [] // najwyzej trzeba bedzie zamienic obiekty na jakies referencje i potem dac switcha
@@ -681,14 +764,7 @@ class Weapons{
       const weapon = this.weapons[i];
       const timer = this.timers[i];
       if(timer.timeLeft <1){
-        //this.layer.fire()
-        //console.log(weapon)
-        const n = this.weapons
-        //od biedy mozna zrobic liste
-        const tmpWeapon = new randomFireball(50)
-        const weaponCopy = { ...weapon }
-        this.layer.fireProjectile(tmpWeapon)
-        //console.log(this.layer.projectiles)
+        this.layer.fire()
         console.log("cyk")
       }
       weapon.update(delta);
@@ -713,8 +789,9 @@ class Map{
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
     this.weapons = new Weapons(this.ProjectileLayer);
-    this.weapons.add(new randomFireball)
-    this.weapons.add(new randomFireball)
+    
+    this.weapons.add(new randomFireball(50))
+    //this.weapons.add(new randomFireball(50))
     
   }
   drawBackground(){
