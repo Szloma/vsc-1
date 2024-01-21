@@ -334,12 +334,15 @@ class Enemy {
 }
 
 class EnemyContainer {
-  constructor() {
+  constructor(player) {
+      this.player = player;
       this.gameOver = false;
       this.container = new PIXI.Container();
       this.enemies = [];
       this.container.x = 0; 
       this.container.y = 0; 
+      this.randomX= 0;
+      this.randomY = 0;
       app.stage.addChild(this.container)
   }
   getRandomEnemy(){
@@ -362,36 +365,39 @@ class EnemyContainer {
     var noOfEnemies =Math.floor(Math.random() * howMany) + 1;
   }
   spawnEnemy() {
+    console.log(this.player.sprite.getBounds())
     const spawnMargin = 50;
     var edge = Math.floor(Math.random() * 4) + 1;
-    var randomX = 0;
-    var randomY = 0;
-    switch (edge) {
-      case 1:
-        randomX = -spawnMargin +this.container.x;
-        randomY = getRandomNumberY()+this.container.y
-        break;
-      case 2:
-        randomX = getRandomNumberX() +this.container.x;
-        randomY = app.screen.height + spawnMargin +this.container.y
-        break
-      case 3:
-        randomX = app.screen.width+ spawnMargin +this.container.x;
-        randomY = getRandomNumberY() +this.container.y
-        break;
-      case 4:
-        randomX = getRandomNumberX() +this.container.x;
-        randomY = -spawnMargin +this.container.y
-        break;
-      default:
-        var randomX = 0;
-        var randomY = 0;
+    if(this.container.x !== undefined){
+      switch (edge) {
+        case 1:
+          console.log(this.container.x)
+          this.randomX = -spawnMargin +this.container.x;
+          this.randomY = getRandomNumberY()+this.container.y
+          break;
+        case 2:
+          this.randomX = getRandomNumberX() +this.container.x;
+          this.randomY = app.screen.height + spawnMargin +this.container.y
+          break
+        case 3:
+          this.randomX = app.screen.width+ spawnMargin +this.container.x;
+          this.randomY = getRandomNumberY() +this.container.y
+          break;
+        case 4:
+          this.randomX = getRandomNumberX() +this.container.x;
+          this.randomY = -spawnMargin +this.container.y
+          break;
+        default:
+          this.randomX = 0;
+          this.randomY = 0;
+      }
+  
+      let enem = enemyTypes.getRandomEnemy();
+      const newEnemy = new Enemy(enem.spriteTexture, enem.speed,  enem.health,this.randomX, this.randomY)
+  
+      this.addEnemy(newEnemy);
     }
 
-    let enem = enemyTypes.getRandomEnemy();
-    const newEnemy = new Enemy(enem.spriteTexture, enem.speed,  enem.health,randomX, randomY)
-
-    this.addEnemy(newEnemy);
 }
 
   update() {
@@ -524,7 +530,7 @@ class randomFireball{
     this.sprite.y = app.screen.height/2
     this.speed = 10;
     this.damage = 50;
-    this.durationTime = 50;
+    this.durationTime = 150;
     this.duration = this.durationTime; 
     this.cooldown = 50;
     this.hitbox = new PIXI.Rectangle(
@@ -536,22 +542,17 @@ class randomFireball{
   this.direction = this.randomDirection()
   }
   randomDirection(){
-    let dx = 100 - this.sprite.x;
-    let dy = 333 - this.sprite.y;
+    let dx = getRandomNumberX() - this.sprite.x;
+    let dy = getRandomNumberY() - this.sprite.y;
     const length = Math.sqrt(dx * dx + dy * dy);
     return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
   }
   calculateDirection(target){
-    //dodac celowanie
-    //projectile.sprite.getBounds()
-    //console.log("target")
-    console.log("calc")
-    console.log(target.sprite.getBounds().x)
-    //console.log("/target")
+
     const location = target.sprite.getBounds()
 
-    let dx = location.x - this.sprite.x;
-    let dy = location.y - this.sprite.y;
+    let dx = location.x - this.sprite.getBounds().x;
+    let dy = location.y - this.sprite.getBounds().y;
     const length = Math.sqrt(dx * dx + dy * dy);
     return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
   }
@@ -629,7 +630,7 @@ class WeaponWand {
     this.player = player
     this.projectileLayer = projectileLayer
     this.enemyLayer = enemyLayer;
-    this.fireRate = 20;
+    this.fireRate = 40;
     this.cooldown = this.fireRate;
   }
   fire(){
@@ -648,11 +649,9 @@ class WeaponWand {
    
   }
   update(delta){
-    console.log(this.cooldown)
     this.cooldown -= delta;
 
     if (this.cooldown <= 2) {
-      console.log("updating")
       this.fire()  
       this.cooldown = this.fireRate
     }
@@ -663,15 +662,16 @@ class WeaponWand {
 class Map{
   constructor(backTexture){
 
+    this.player = new Player('player.png', 5);
     //tmp
     this.EnemyTimerDuration = 50
     this.EnemyTimer = this.EnemyTimerDuration;
-    this.EnemyContainer = new EnemyContainer()
+    this.EnemyContainer = new EnemyContainer(this.player)
     this.groundLayer = new GroundItemsLayer();
 
     //test
   
-    this.player = new Player('player.png', 5);
+
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
     
