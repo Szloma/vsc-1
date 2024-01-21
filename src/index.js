@@ -138,107 +138,6 @@ class GroundItem{
 // Weapons
 
 //
-class Projectile{
-  constructor(sprite){
-    
-  }
-}
-class Weapon{
-  constructor(speed, damage, projectileLayer){
-  this.sprite.x = app.screen.width/2
-  this.sprite.y = app.screen.height/2
-  }
-  
-  use(){
-    this.projectileLayer.addProjectile()
-  }
-
-}
-
-
-
-class dagger{
-  constructor(duration){
-    this.sprite = PIXI.Sprite.from('dagger.png')
-    this.sprite.anchor.set(0.5)
-    this.sprite.x = app.screen.width/2
-    this.sprite.y = app.screen.height/2
-    this.speed = 10;
-    this.damage = 50;
-    this.durationTime = duration;
-    this.duration = duration; 
-    this.cooldown = 50;
-    this.hitbox = new PIXI.Rectangle(
-      this.sprite.x - this.sprite.width / 2,
-      this.sprite.y - this.sprite.height / 2,
-      30,10
-  );
-  app.stage.addChild(this.sprite)
-  this.direction = this.calculateDirection()
-  }
-  getCooldown(){
-    return this.cooldown;
-  }
-  updateCooldown(n){
-    this.cooldown = n;
-  }
-  updateDuration(duration){
-    this.durationTime = duration
-    this.duration = duration
-  }
-  getDuration(){
-    return this.durationTime;
-  }
-
-  calculateDirection(){
-    //dodac celowanie
-    let dx = 0 - this.sprite.x;
-    let dy = 0;
-    const length = Math.sqrt(dx * dx + dy * dy);
-    return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
-  }
-  updateDirection(){
-    this.direction = this.calculateDirection();
-  }
-  update(delta){
-    //console.log(this.sprite.x)
-    this.sprite.x += this.direction.vx;
-    this.sprite.y += this.direction.vy;
-    this.hitbox.x = this.sprite.x;
-    this.hitbox.y = this.sprite.y;
-    this.duration -= delta;
-    if (this.duration <= 0) {
-      this.updateDirection()
-      //this.reset();
-    }
-  }
-  destroy() {
-    
-  if (this.sprite.parent) {
-      this.sprite.parent.removeChild(this.sprite);
-  } 
-  //this.direction = null;
-  this.duration =null
-}
-  reset(){
-   
-    this.sprite.x = app.screen.width/2
-    this.sprite.y = app.screen.height/2
-    this.duration = this.durationTime;
-    this.show()
-  }
-  softreset(){
-    this.sprite.x = app.screen.width/2
-    this.sprite.y = app.screen.height/2
-  }
-  hide(){
-    this.sprite.visible = false;
-  }
-  show(){
-    this.sprite.visible = true;
-  }
-}
-
 
 
 
@@ -443,6 +342,10 @@ class EnemyContainer {
       this.container.y = 0; 
       app.stage.addChild(this.container)
   }
+  getRandomEnemy(){
+    const randomIndex = Math.floor(Math.random() * this.enemies.length);
+    return this.enemies[randomIndex];
+  }
 
   addEnemy(enemy) {
       //console.log("enemy added")
@@ -630,17 +533,30 @@ class randomFireball{
       10,10
   );
   app.stage.addChild(this.sprite)
-  this.direction = this.calculateDirection()
+  this.direction = this.randomDirection()
   }
-  calculateDirection(){
-    //dodac celowanie
-    let dx = 0 - this.sprite.x;
-    let dy = 0;
+  randomDirection(){
+    let dx = 100 - this.sprite.x;
+    let dy = 333 - this.sprite.y;
     const length = Math.sqrt(dx * dx + dy * dy);
     return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
   }
-  updateDirection(){
-    this.direction = this.calculateDirection();
+  calculateDirection(target){
+    //dodac celowanie
+    //projectile.sprite.getBounds()
+    //console.log("target")
+    console.log("calc")
+    console.log(target.sprite.getBounds().x)
+    //console.log("/target")
+    const location = target.sprite.getBounds()
+
+    let dx = location.x - this.sprite.x;
+    let dy = location.y - this.sprite.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
+  }
+  updateDirection(target){
+    this.direction = this.calculateDirection(target);
   }
   update(delta){
     //console.log(this.sprite.x)
@@ -693,22 +609,43 @@ class projectileLayer{
     })
   }
 }
-class WeaponWand {
+class dagger{
+  constructor(){
+    
+  }
+}
+
+class WeaponDagger {
   constructor(player, projectileLayer){
+    this.player = player;
+    this.projectileLayer = projectileLayer;
+    this.firerate = 100;
+    this.cooldown = this.firerate
+  }
+}
+
+class WeaponWand {
+  constructor(player, projectileLayer, enemyLayer){
     this.player = player
     this.projectileLayer = projectileLayer
-    this.fireRate = 10;
+    this.enemyLayer = enemyLayer;
+    this.fireRate = 20;
     this.cooldown = this.fireRate;
- 
-    this.timer = new PIXI.Ticker();
-    //this.timer.add(this.fireRate.bind(this));
-    //this.timer.start()
   }
   fire(){
     const projectile = new randomFireball();
     projectile.x = this.player.x;
     projectile.y = this.player.y;
+    const target = this.enemyLayer.getRandomEnemy();
+   // projectile.calculateDirection(this.enemyLayer.getRandomEnemy())
+   if(target !== undefined){
+    projectile.updateDirection(this.enemyLayer.getRandomEnemy())
     this.projectileLayer.addProjectile(projectile)
+    
+   } else{
+    this.projectileLayer.addProjectile(projectile)
+   }
+   
   }
   update(delta){
     console.log(this.cooldown)
@@ -738,7 +675,7 @@ class Map{
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
     
-    this.weapon1 = new WeaponWand(this.player, this.ProjectileLayer)
+    this.weapon1 = new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)
     this.weapon1.fire()
     
   }
