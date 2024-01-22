@@ -148,6 +148,7 @@ class GroundItem{
 //
 class Player {
   constructor(texture, speed){
+
     this.sprite = PIXI.Sprite.from(texture);
     this.sprite.anchor.set(0.5);
     this.sprite.x = app.screen.width / 2;
@@ -161,7 +162,7 @@ class Player {
       this.sprite.y - this.sprite.height / 2,
       10,10
   );
-
+    this.viewport = new PIXI.Rectangle(0,0,app.width, app.height)
     app.stage.addChild(this.sprite);
 
     
@@ -365,7 +366,7 @@ class EnemyContainer {
     var noOfEnemies =Math.floor(Math.random() * howMany) + 1;
   }
   spawnEnemy() {
-    console.log(this.player.sprite.getBounds())
+    console.log(this.container.getBounds())
     const spawnMargin = 50;
     var edge = Math.floor(Math.random() * 4) + 1;
     if(this.container.x !== undefined){
@@ -548,13 +549,18 @@ class randomFireball{
     return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
   }
   calculateDirection(target){
-
-    const location = target.sprite.getBounds()
-
-    let dx = location.x - this.sprite.getBounds().x;
-    let dy = location.y - this.sprite.getBounds().y;
-    const length = Math.sqrt(dx * dx + dy * dy);
-    return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
+    if(target!== undefined){
+      const location = target.sprite.getBounds()
+      //console.log(target.sprite)
+      let dx = location.x - this.sprite.getBounds().x;
+      let dy = location.y - this.sprite.getBounds().y;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
+    }
+    else {
+      return {vx: 0, vy:0}
+    }
+ 
   }
   updateDirection(target){
     this.direction = this.calculateDirection(target);
@@ -630,7 +636,7 @@ class WeaponWand {
     this.player = player
     this.projectileLayer = projectileLayer
     this.enemyLayer = enemyLayer;
-    this.fireRate = 40;
+    this.fireRate = 5;
     this.cooldown = this.fireRate;
   }
   fire(){
@@ -638,12 +644,16 @@ class WeaponWand {
     projectile.x = this.player.x;
     projectile.y = this.player.y;
     const target = this.enemyLayer.getRandomEnemy();
+
    // projectile.calculateDirection(this.enemyLayer.getRandomEnemy())
    if(target !== undefined){
     projectile.updateDirection(this.enemyLayer.getRandomEnemy())
     this.projectileLayer.addProjectile(projectile)
-    
+    console.log("last enemy")
+    console.log(this.projectileLayer.enemies)
+    console.log("/last enemy")
    } else{
+    console.log("notarget")
     this.projectileLayer.addProjectile(projectile)
    }
    
@@ -659,12 +669,70 @@ class WeaponWand {
   }
 }
 
+
+class Background {
+  constructor() {
+      this.container = new PIXI.Container();
+      this.spriteList = [
+          PIXI.Texture.from('Grass1.png'),
+          PIXI.Texture.from('Grass2.png'),
+
+      ];
+
+      this.initializeBackground();
+  }
+
+  initializeBackground() {
+     
+      const gridSizeX = Math.ceil(app.screen.width / 32);
+      const gridSizeY = Math.ceil(app.screen.height / 32); 
+
+      for (let i = 0; i < gridSizeX; i++) {
+          for (let j = 0; j < gridSizeY; j++) {
+              const randomIndex = Math.floor(Math.random() * this.spriteList.length);
+              const sprite = new PIXI.Sprite(this.spriteList[randomIndex]);
+              sprite.x = i * 32;
+              sprite.y = j * 32;
+              this.container.addChild(sprite);
+          }
+      }
+      app.stage.addChild(this.container)
+  }
+
+  update(playerDirection) {
+      this.container.children.forEach(sprite => {
+          if (playerDirection === 'up' && sprite.y > app.screen.height) {
+              sprite.destroy();
+          } else if (playerDirection === 'down' && sprite.y < 0) {
+              sprite.destroy();
+          }
+      });
+
+      const newSpritesCount = 1; 
+      for (let i = 0; i < newSpritesCount; i++) {
+          const randomIndex = Math.floor(Math.random() * this.spriteList.length);
+          const sprite = new PIXI.Sprite(this.spriteList[randomIndex]);
+
+          if (playerDirection === 'up') {
+              sprite.y = -sprite.height;
+          } else if (playerDirection === 'down') {
+              sprite.y = app.screen.height + sprite.height;
+          }
+
+          sprite.x = Math.random() * app.screen.width;
+          this.container.addChild(sprite);
+      }
+  }
+}
+
+
 class Map{
   constructor(backTexture){
+    //this.background = new Background()
 
     this.player = new Player('player.png', 5);
     //tmp
-    this.EnemyTimerDuration = 50
+    this.EnemyTimerDuration = 50 
     this.EnemyTimer = this.EnemyTimerDuration;
     this.EnemyContainer = new EnemyContainer(this.player)
     this.groundLayer = new GroundItemsLayer();
@@ -677,7 +745,8 @@ class Map{
     
     this.weapon1 = new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)
     this.weapon1.fire()
-    
+
+
   }
   drawBackground(){
 
