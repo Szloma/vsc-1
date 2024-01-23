@@ -630,16 +630,86 @@ class projectileLayer{
 }
 class dagger{
   constructor(){
-    
+    this.sprite = PIXI.Sprite.from('dagger.png')
+    this.sprite.anchor.set(0.5)
+    this.sprite.x = app.screen.width/2
+    this.sprite.y = app.screen.height/2
+    this.speed = 10;
+    this.damage = 150;
+    this.durationTime = 10;
+    this.duration = this.durationTime; 
+    this.cooldown = 50;
+    this.hitbox = new PIXI.Rectangle(
+      this.sprite.x - this.sprite.width / 2,
+      this.sprite.y - this.sprite.height / 2,
+      10,10
+  );
+  app.stage.addChild(this.sprite)
+  this.direction = this.randomDirection()
+  }
+  randomDirection(){
+    let dx = 0//getRandomNumberX() - this.sprite.x;
+    let dy =10//getRandomNumberY() - this.sprite.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
+  }
+  calculateDirection(target){
+    if(target!== undefined){
+      const location = target.sprite.getBounds()
+      //console.log(target.sprite)
+      let dx = location.x - this.sprite.getBounds().x;
+      let dy = location.y - this.sprite.getBounds().y;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
+    }
+    else {
+      return {vx: 0, vy:0}
+    }
+ 
+  }
+  updateDirection(target){
+    this.direction = this.calculateDirection(target);
+  }
+  update(delta){
+    //console.log(this.sprite.x)
+    this.sprite.x += this.direction.vx;
+    this.sprite.y += this.direction.vy;
+    this.hitbox.x = this.sprite.x;
+    this.hitbox.y = this.sprite.y;
+    this.duration -= delta;
+    if (this.duration <= 0) {
+      this.updateDirection()
+      //this.reset();
+    }
   }
 }
 
 class WeaponDagger {
-  constructor(player, projectileLayer){
-    this.player = player;
-    this.projectileLayer = projectileLayer;
-    this.firerate = 100;
-    this.cooldown = this.firerate
+  constructor(player, projectileLayer, enemyLayer){
+    this.player = player
+    this.projectileLayer = projectileLayer
+    this.enemyLayer = enemyLayer;
+    this.fireRate = 30;
+    this.cooldown = this.fireRate;
+  }
+  fire(){
+    const projectile = new dagger();
+    projectile.x = this.player.x;
+    projectile.y = this.player.y;
+    //const target = this.enemyLayer.getRandomEnemy();
+
+   // projectile.calculateDirection(this.enemyLayer.getRandomEnemy())
+    this.projectileLayer.addProjectile(projectile)
+   
+  }
+  update(delta){
+    this.cooldown -= delta;
+
+    if (this.cooldown <= 2) {
+      this.fire()  
+      this.cooldown = this.fireRate
+    }
+
   }
 }
 
@@ -815,8 +885,14 @@ class Map{
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
     
-    this.weapon1 = new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)
-    this.weapon1.fire()
+    this.weapons= [];
+    //this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
+    //this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
+    this.weapons.push(new WeaponDagger(this.player, this.ProjectileLayer, this.EnemyContainer))
+    //this.weapon1 = new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)
+    //this.weapon1.fire()
+   //this.weapon2 = new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)
+    //this.weapon2.fire()
   
 
   }
@@ -829,9 +905,14 @@ class Map{
     }
     this.weaponTimer.update(delta)
   }
+  updateWeapons(delta){
+    for (const weapon of this.weapons) {
+      weapon.update(delta)
+    }
+  }
   
   update(delta){
-    this.weapon1.update(delta)
+    this.updateWeapons(delta)
     //weapontimer
     //update dzieje sie w weapons.update
     this.ProjectileLayer.update(delta)
@@ -890,7 +971,7 @@ class Map{
               this.ProjectileLayer.removeProjectile(projectile)
               //this.ProjectileLayer.addNewProjectile()
              
-              if(enemy.HP.currentHP ==0){
+              if(enemy.HP.currentHP <=0){
                 //console.log(enemy.HP.currentHP)
                 //EnemyContainer.removeChild()
                 this.EnemyContainer.removeEnemy(enemy)
