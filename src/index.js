@@ -670,11 +670,12 @@ class WeaponWand {
 
 class Tile {
   constructor(x, y, texture) {
-      this.sprite = new PIXI.Sprite(texture);
-      this.sprite.anchor.set(0.5);
-      this.sprite.x = x;
-      this.sprite.y = y;
-      app.stage.addChild(this.sprite);
+    
+    this.sprite = new PIXI.Sprite(texture);
+    this.sprite.anchor.set(0.5);
+    this.sprite.x = x;
+    this.sprite.y = y;
+    //app.stage.addChild(this.sprite);
   }
   update(xDelta,yDelta,speed){
     const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
@@ -707,26 +708,42 @@ class Tile {
 
 class Background {
   constructor() {
+    this.container = new PIXI.Container()
+    this.backgroundWidth = app.screen.width +128;
+    this.backgroundHeight = app.screen.height +128
+    this.container.x -=64;
+    this.container.y -=64
+    console.log(app.screen.width)
+    console.log(this.backgroundWidth)
+    this.container.width = app.screen.width +128;
+    this.container.height = app.screen.height +128
+    console.log(this.container.width)
+  
+    //this.container.anchorX = 1000
+    //this.container.anchorY = 1000;
     this.tileTextures = [
       PIXI.Texture.from('Grass1.png'),
       PIXI.Texture.from('Grass2.png'),
       PIXI.Texture.from('Grass3.png'),
   ];
     this.tileSize = 64;
-    this.columns = Math.ceil(app.screen.width / this.tileSize);
-    this.rows = Math.ceil(app.screen.height / this.tileSize);
-    this.tiles = [];
+    this.columns = Math.ceil(this.backgroundWidth / this.tileSize);
+    this.rows = Math.ceil(this.backgroundWidth / this.tileSize);
+
+    //this.container.x = (app.screen.width - this.backgroundWidth) / 2;
+    //this.container.y = (app.screen.height - this.backgroundHeight) / 2;
 
       for (let row = 0; row < this.rows; row++) {
           for (let col = 0; col < this.columns; col++) {
         
               const x = ((col) * this.tileSize);
-              const y = ((row) * this.tileSize);;
-              this.tiles.push(new Tile(x, y, this.randomTexture()));
+              const y = ((row) * this.tileSize);
+              const tile = new Tile(x, y, this.randomTexture())
+              this.container.addChild(tile.sprite)
           }
       }
-    this.backgroundWidth = this.columns * this.tileSize;
-    this.backgroundHeight = this.rows * this.tileSize;
+
+    app.stage.addChild(this.container)
     //this.offsetTiles()
   }
   randomTexture(){
@@ -737,16 +754,35 @@ class Background {
     const offsetX = (this.backgroundWidth - app.screen.width) / 2;
     const offsetY = (this.backgroundHeight - app.screen.height) / 2;
     this.tiles.forEach(tile =>{
-      console.log("offsetuje")
       tile.sprite.x -= offsetX;
       tile.sprite.y -= offsetY;
     })
   }
   update(xDelta,yDelta,speed){
+    const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
 
-    for (const tile of this.tiles){
-      tile.update(xDelta,yDelta,speed)
-    } 
+    if (length !== 0) {
+      const vx = (xDelta / length) * speed;
+      const vy = (yDelta / length) * speed;
+      
+      this.container.children.forEach(tile => {
+        tile.x+=vx;
+        tile.y+=vy;
+        
+      if (tile.x >  this.backgroundWidth) {
+        tile.x = 0;
+      } else if (tile.x < 0) {
+        tile.x =  this.backgroundWidth;
+      }
+
+      if (tile.y > this.backgroundHeight) {
+        tile.y = 0;
+      } else if (tile.y < 0) {
+        tile.y = this.backgroundHeight;
+      }
+    });
+    }
+    
   }
 }
 
