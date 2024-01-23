@@ -658,13 +658,14 @@ class projectileLayer{
   }
 }
 class dagger{
-  constructor(){
+  constructor(dmg=150){
     this.sprite = PIXI.Sprite.from('dagger.png')
     this.sprite.anchor.set(0.5)
     this.sprite.x = app.screen.width/2
     this.sprite.y = app.screen.height/2
     this.speed = 10;
-    this.damage = 150;
+    this.damage = dmg;
+    console.log(this.damage)
     this.durationTime = 10;
     this.duration = this.durationTime; 
     this.cooldown = 50;
@@ -724,9 +725,18 @@ class WeaponDagger {
     this.enemyLayer = enemyLayer;
     this.fireRate = 150;
     this.cooldown = this.fireRate;
+    this.lvl = 1;
+    this.dmg = 150;
+  }
+  lvlup(){
+    if(this.lvl <5){
+      this.lvl +=1;
+      this.cooldown -=5;
+      this.dmg +=10;
+    }
   }
   fire(){
-    const projectile = new dagger();
+    const projectile = new dagger(this.dmg);
     projectile.x = this.player.x;
     projectile.y = this.player.y;
     //const target = this.enemyLayer.getRandomEnemy();
