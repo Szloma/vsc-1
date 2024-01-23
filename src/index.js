@@ -296,6 +296,10 @@ class Enemy {
     app.stage.addChild(this.sprite);
 
   }
+  updateCoordinates(x,y){
+    this.sprite.x = x;
+    this.sprite.y =y;
+  }
 
   chasePlayer(player) {
     //const playerGlobalBounds = player.sprite.getBounds();
@@ -342,6 +346,10 @@ class EnemyContainer {
       this.enemies = [];
       this.container.x = 0; 
       this.container.y = 0; 
+
+      this.absoluteX = 0 //app.screen.width / 2;;
+      this.absoluteY = 0 //app.screen.width / 2;;
+
       this.randomX= 0;
       this.randomY = 0;
       app.stage.addChild(this.container)
@@ -368,25 +376,26 @@ class EnemyContainer {
   spawnEnemy() {
     //console.log(this.container.getBounds())
     const spawnMargin = 50;
-    var edge = Math.floor(Math.random() * 4) + 1;
+    var edge =  Math.floor(Math.random() * 4) + 1;
     if(this.container.x !== undefined){
       switch (edge) {
         case 1:
-          console.log(this.container.x)
-          this.randomX = -spawnMargin +this.container.x;
-          this.randomY = getRandomNumberY()+this.container.y
+          
+          this.randomX = -this.absoluteX - spawnMargin
+          this.randomY = -this.absoluteY + getRandomNumberY()
+
           break;
         case 2:
-          this.randomX = getRandomNumberX() +this.container.x;
-          this.randomY = app.screen.height + spawnMargin +this.container.y
+          this.randomX = getRandomNumberX() -this.absoluteX
+          this.randomY =-this.absoluteY - spawnMargin
           break
         case 3:
-          this.randomX = app.screen.width+ spawnMargin +this.container.x;
-          this.randomY = getRandomNumberY() +this.container.y
+          this.randomX = -this.absoluteX + app.screen.width+spawnMargin
+          this.randomY = -this.absoluteY+ getRandomNumberY()
           break;
         case 4:
-          this.randomX = getRandomNumberX() +this.container.x;
-          this.randomY = -spawnMargin +this.container.y
+          this.randomX = getRandomNumberX() -this.absoluteX
+          this.randomY = app.screen.height- this.absoluteY+spawnMargin;
           break;
         default:
           this.randomX = 0;
@@ -395,11 +404,12 @@ class EnemyContainer {
   
       let enem = enemyTypes.getRandomEnemy();
       const newEnemy = new Enemy(enem.spriteTexture, enem.speed,  enem.health,this.randomX, this.randomY)
-  
+      //newEnemy.updateCoordinates(this.randomX, this.randomY)
       this.addEnemy(newEnemy);
     }
 
 }
+
 
   update() {
     
@@ -423,6 +433,8 @@ class EnemyContainer {
     if (length !== 0) {
       const vx = (xDelta / length) * speed;
       const vy = (yDelta / length) * speed;
+      this.absoluteX += vx;
+      this.absoluteY +=vy
       this.container.x += vx;
       this.container.y += vy;
     }
@@ -792,7 +804,7 @@ class Map{
     this.background = new Background(10,10)
     this.player = new Player('player.png', 5);
     //tmp
-    this.EnemyTimerDuration = 50 
+    this.EnemyTimerDuration = 20 
     this.EnemyTimer = this.EnemyTimerDuration;
     this.EnemyContainer = new EnemyContainer(this.player)
     this.groundLayer = new GroundItemsLayer();
