@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 
-const app = new PIXI.Application({ background: '#1099bb', resizeTo: window });
+const app = new PIXI.Application({ background: '#509B66', resizeTo: window });
 
 document.body.appendChild(app.view);
 
@@ -92,7 +92,7 @@ class GroundItemsLayer{
       this.container.y += vy;
     }
   }
-  spawnItem() {
+  spawnItem(target) {
     const spawnMargin = 50;
     var edge = Math.floor(Math.random() * 4) + 1;
     var randomX = 90;
@@ -118,7 +118,7 @@ class GroundItemsLayer{
 
 
 }
-class GroundItem{
+class Item{
   constructor(texture){
     this.sprite = PIXI.Sprite.from(texture);
     this.sprite.anchor.set(0.5);
@@ -126,6 +126,9 @@ class GroundItem{
     this.sprite.y =y
     this.hitbox = new PIXI.Rectangle(x, y, 10, 10);
     app.stage.addChild(this.sprite);
+  }
+  animate(){
+
   }
   update(delta){
 
@@ -368,8 +371,8 @@ class Enemy {
 }
 
 class EnemyContainer {
-  constructor(player) {
-      this.player = player;
+  constructor() {
+      //this.player = player;
       this.gameOver = false;
       this.container = new PIXI.Container();
       this.enemies = [];
@@ -924,7 +927,12 @@ class Background {
 
 class Map{
   constructor(backTexture){
+
     this.background = new Background(10,10)
+    this.EnemyTimerDuration = 20 
+    this.EnemyTimer = this.EnemyTimerDuration;
+    this.EnemyContainer = new EnemyContainer()
+    this.groundLayer = new GroundItemsLayer();
     this.player = new Player('player.png', 5);
     //testing
     this.player.hpup(100)
@@ -932,10 +940,7 @@ class Map{
     console.log(this.player.HP.HP)
 
     //tmp
-    this.EnemyTimerDuration = 20 
-    this.EnemyTimer = this.EnemyTimerDuration;
-    this.EnemyContainer = new EnemyContainer(this.player)
-    this.groundLayer = new GroundItemsLayer();
+
 
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
@@ -969,10 +974,9 @@ class Map{
   
   update(delta){
     this.updateWeapons(delta)
-    //weapontimer
-    //update dzieje sie w weapons.update
     this.ProjectileLayer.update(delta)
 
+    this.groundLayer.update()
     //tmp 
     this.EnemyTimer -= delta;
     if (this.EnemyTimer <= 0) {
@@ -1030,6 +1034,9 @@ class Map{
               if(enemy.HP.currentHP <=0){
                 //console.log(enemy.HP.currentHP)
                 //EnemyContainer.removeChild()
+
+
+                // tutaj drop
                 this.EnemyContainer.removeEnemy(enemy)
                 //console.log("it's over")
                 //this.EnemyContainer.enemies.splice(i,1)
