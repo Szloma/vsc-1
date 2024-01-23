@@ -168,6 +168,12 @@ class Player {
 
     
   }
+  lvlup(){
+
+  }
+  hpup(value){
+    this.HP.setNewHp(value);
+  }
   autoheal(){
     this.HP.increaseHP(this.autoHealValue)
   }
@@ -205,6 +211,12 @@ class HP {
     const percentage = calculatePercentage(this.HP, this.maxHP)
     const barWidth = calculateAmountFromPercentage(percentage, this.barWidth)
     this.hpBarFront.width = barWidth;
+  }
+  setNewHp(value){
+    console.log("setting up new hp")
+    this.maxHP += value
+    this.HP += value;
+    console.log(this.maxHP)
   }
 
   decreaseHP(value){
@@ -904,6 +916,11 @@ class Map{
   constructor(backTexture){
     this.background = new Background(10,10)
     this.player = new Player('player.png', 5);
+    //testing
+    this.player.hpup(100)
+    console.log("inithp")
+    console.log(this.player.HP.HP)
+
     //tmp
     this.EnemyTimerDuration = 20 
     this.EnemyTimer = this.EnemyTimerDuration;
