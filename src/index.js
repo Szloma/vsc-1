@@ -172,7 +172,7 @@ class Player {
     this.HP.increaseHP(this.autoHealValue)
   }
   update(delta){
-    console.log(this.HP.HP)
+    //console.log(this.HP.HP)
     this.autoheal()
     this.sprite.rotation+= 0.1 * delta;
     
@@ -232,9 +232,9 @@ class HP {
       this.HP = this.maxHP
     }
     if(this.HP<this.maxHP){
-      this.updateBar()
-      console.log("healing")
+
       this.HP +=value;
+      this.updateBar()
     }
    
     
@@ -553,13 +553,13 @@ class simpleTimer{
 
 }
 class randomFireball{
-  constructor(){
+  constructor(damage =50){
     this.sprite = PIXI.Sprite.from('fireball.png')
     this.sprite.anchor.set(0.5)
     this.sprite.x = app.screen.width/2
     this.sprite.y = app.screen.height/2
     this.speed = 10;
-    this.damage = 50;
+    this.damage = damage;
     this.durationTime = 150;
     this.duration = this.durationTime; 
     this.cooldown = 50;
@@ -688,7 +688,7 @@ class dagger{
     this.direction = this.calculateDirection(target);
   }
   updateRotation(target){
-    console.log("rotation ")
+
     this.sprite.rotation = target.sprite.rotation
   }
   update(delta){
@@ -742,9 +742,18 @@ class WeaponWand {
     this.enemyLayer = enemyLayer;
     this.fireRate = 30;
     this.cooldown = this.fireRate;
+    this.lvl = 1;
+    this.dmg = 30;
+  }
+  lvlup(){
+    if(this.lvl <5){
+      this.lvl +=1;
+      this.cooldown -=5;
+      this.dmg +=10;
+    }
   }
   fire(){
-    const projectile = new randomFireball();
+    const projectile = new randomFireball(this.dmg);
     projectile.x = this.player.x;
     projectile.y = this.player.y;
     const target = this.enemyLayer.getRandomEnemy();
@@ -901,21 +910,19 @@ class Map{
     this.EnemyContainer = new EnemyContainer(this.player)
     this.groundLayer = new GroundItemsLayer();
 
-    //test
-  
-
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
     
     this.weapons= [];
-    //this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
-    //this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
+    this.tmpweapon = new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)
+    this.tmpweapon.lvlup()
+    this.tmpweapon.lvlup()
+    this.tmpweapon.lvlup()
+    this.tmpweapon.lvlup()
+    this.tmpweapon.lvlup()
+    this.weapons.push(this.tmpweapon) 
+    this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
     this.weapons.push(new WeaponDagger(this.player, this.ProjectileLayer, this.EnemyContainer))
-    //this.weapon1 = new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)
-    //this.weapon1.fire()
-   //this.weapon2 = new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)
-    //this.weapon2.fire()
-  
 
   }
   drawBackground(){
