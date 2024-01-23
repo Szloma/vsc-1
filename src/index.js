@@ -636,7 +636,7 @@ class WeaponWand {
     this.player = player
     this.projectileLayer = projectileLayer
     this.enemyLayer = enemyLayer;
-    this.fireRate = 5;
+    this.fireRate = 30;
     this.cooldown = this.fireRate;
   }
   fire(){
@@ -668,94 +668,92 @@ class WeaponWand {
 }
 
 
+class Tile {
+  constructor(x, y, texture) {
+      this.sprite = new PIXI.Sprite(texture);
+      this.sprite.anchor.set(0.5);
+      this.sprite.x = x;
+      this.sprite.y = y;
+      app.stage.addChild(this.sprite);
+  }
+  update(xDelta,yDelta,speed){
+    const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
+
+    if (length !== 0) {
+      const vx = (xDelta / length) * speed;
+      const vy = (yDelta / length) * speed;
+      this.move(vx,vy);
+    }
+
+  }
+  move(x, y) {
+    
+      this.sprite.x += x;
+      this.sprite.y += y;
+
+      if (this.sprite.x > app.screen.width) {
+          this.sprite.x = 0;
+      } else if (this.sprite.x < 0) {
+          this.sprite.x = app.screen.width;
+      }
+
+      if (this.sprite.y > app.screen.height) {
+          this.sprite.y = 0;
+      } else if (this.sprite.y < 0) {
+          this.sprite.y = app.screen.height;
+      }
+  }
+}
+
 class Background {
   constructor() {
-    this.movementY =0;
+    this.tileTextures = [
+      PIXI.Texture.from('Grass1.png'),
+      PIXI.Texture.from('Grass2.png'),
+      PIXI.Texture.from('Grass3.png'),
+  ];
+    this.tileSize = 64;
+    this.columns = Math.ceil(app.screen.width / this.tileSize);
+    this.rows = Math.ceil(app.screen.height / this.tileSize);
+    this.tiles = [];
 
-    this.spriteHeight = 64;
-    this.spriteWidth = 64;
-
-      this.container = new PIXI.Container();
-      this.spriteList = [
-          PIXI.Texture.from('Grass1.png'),
-          PIXI.Texture.from('Grass2.png'),
-          PIXI.Texture.from('Grass3.png'),
-      ];
-
-      this.initializeBackground();
-  }
-
-  initializeBackground() {
-     const padding = 64;
-      const gridSizeX = Math.ceil(app.screen.width / this.spriteWidth)+padding;
-      const gridSizeY = Math.ceil(app.screen.height / this.spriteHeight)+padding; 
-      console.log(gridSizeX)
-      for (let i = 0; i < gridSizeX; i++) {
-          for (let j = 0; j < gridSizeY; j++) {
-              const randomIndex = Math.floor(Math.random() * this.spriteList.length);
-              const sprite = new PIXI.Sprite(this.spriteList[randomIndex]);
-              sprite.x = i * this.spriteWidth;
-              sprite.y = j * this.spriteWidth;
-              this.container.addChild(sprite);
+      for (let row = 0; row < this.rows; row++) {
+          for (let col = 0; col < this.columns; col++) {
+        
+              const x = ((col) * this.tileSize);
+              const y = ((row) * this.tileSize);;
+              this.tiles.push(new Tile(x, y, this.randomTexture()));
           }
-          
       }
-      app.stage.addChild(this.container)
+    this.backgroundWidth = this.columns * this.tileSize;
+    this.backgroundHeight = this.rows * this.tileSize;
+    //this.offsetTiles()
   }
-  drawYLine(){
-    const padding = 64;
-    const gridSizeY = Math.ceil(app.screen.height / this.spriteHeight)+padding; 
-    for (let i =0; i< gridSizeY;i++){
-      const randomIndex = Math.floor(Math.random() * this.spriteList.length);
-      const sprite = new PIXI.Sprite(this.spriteList[randomIndex]);
-      sprite.y = 0;
-      sprite.x = i*this.spriteWidth;
-      this.container.addChild(sprite)
-    }
+  randomTexture(){
+    const randomIndex = Math.floor(Math.random() * this.tileTextures.length);
+    return this.tileTextures[randomIndex]
   }
+  offsetTiles(){
+    const offsetX = (this.backgroundWidth - app.screen.width) / 2;
+    const offsetY = (this.backgroundHeight - app.screen.height) / 2;
+    this.tiles.forEach(tile =>{
+      console.log("offsetuje")
+      tile.sprite.x -= offsetX;
+      tile.sprite.y -= offsetY;
+    })
+  }
+  update(xDelta,yDelta,speed){
 
-  update(xDelta, yDelta, playerSpeed) {
-    const spriteWidth = 64;
-    const spriteHeight = 64;
-    
-    // Remove sprites that have left the screen
-    this.container.children.forEach(sprite => {
-        const isOutsideX = (xDelta > 0 && sprite.x > app.screen.width) ||
-                            (xDelta < 0 && sprite.x < -spriteWidth);
-
-        const isOutsideY = (yDelta > 0 && sprite.y > app.screen.height) ||
-                            (yDelta < 0 && sprite.y < -spriteHeight);
-
-        if (isOutsideX || isOutsideY) {
-            sprite.destroy();
-        }
-        if(isOutsideY){
-          //this.drawYLine()
-          this.movementY+=1;
-          if(this.movementY==64){
-
-            console.log("outsidey")
-            this.movementY =0;
-          }
-          
-        }
-    });
-
-    // Update existing sprites based on player's movement and speed
-    this.container.children.forEach(sprite => {
-        sprite.x += xDelta * playerSpeed;
-        sprite.y += yDelta * playerSpeed;
-    });
-
- 
-}
+    for (const tile of this.tiles){
+      tile.update(xDelta,yDelta,speed)
+    } 
+  }
 }
 
 
 class Map{
   constructor(backTexture){
-    this.background = new Background()
-
+    this.background = new Background(10,10)
     this.player = new Player('player.png', 5);
     //tmp
     this.EnemyTimerDuration = 50 
@@ -771,7 +769,7 @@ class Map{
     
     this.weapon1 = new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)
     this.weapon1.fire()
-
+  
 
   }
   drawBackground(){
