@@ -155,6 +155,7 @@ class Player {
     this.sprite.y = app.screen.height / 2;
     this.speed = speed;
     this.HP = new HP(100,50);
+    this.autoHealValue = 0.01;
     this.inventory = new Inventory(); // to do
 
     this.hitbox = new PIXI.Rectangle(
@@ -167,7 +168,12 @@ class Player {
 
     
   }
+  autoheal(){
+    this.HP.increaseHP(this.autoHealValue)
+  }
   update(delta){
+    console.log(this.HP.HP)
+    this.autoheal()
     this.sprite.rotation+= 0.1 * delta;
     
   }
@@ -179,7 +185,7 @@ class Player {
 class HP {
   constructor(maxHP, widthPercent){
     this.maxHP = maxHP;
-    this.HP = maxHP;
+    this.HP = this.maxHP;
     this.dead = false;
     this.hpBarBack = PIXI.Sprite.from("hpbarback.png")
     this.hpBarBack.x = 0;
@@ -195,15 +201,19 @@ class HP {
     app.stage.addChild(this.hpBarBack)
     app.stage.addChild(this.hpBarFront);
   }
+  updateBar(){
+    const percentage = calculatePercentage(this.HP, this.maxHP)
+    const barWidth = calculateAmountFromPercentage(percentage, this.barWidth)
+    this.hpBarFront.width = barWidth;
+  }
 
   decreaseHP(value){
     if(this.HP>0){
       this.HP -=value;
-      const percentage = calculatePercentage(this.HP, this.maxHP)
-      const barWidth = calculateAmountFromPercentage(percentage, this.barWidth)
-      this.hpBarFront.width = barWidth;
+      this.updateBar()
    
-      if(this.HP ==0){
+      if(this.HP <0){
+        this.hpBarFront.visible = false;
         this.dead = true;
       }
     }
@@ -216,10 +226,17 @@ class HP {
   }
 
   increaseHP(value){
-    var tmp = this.HP += value;
-    if(tmp > this.maxHP){
-      this.HP += value;
+    
+    //let tmp = this.HP += value;
+    if((this.HP + value)>this.maxHP){
+      this.HP = this.maxHP
     }
+    if(this.HP<this.maxHP){
+      this.updateBar()
+      console.log("healing")
+      this.HP +=value;
+    }
+   
     
   }
 
@@ -648,8 +665,8 @@ class dagger{
   this.direction = this.randomDirection()
   }
   randomDirection(){
-    let dx = 0//getRandomNumberX() - this.sprite.x;
-    let dy =10//getRandomNumberY() - this.sprite.y;
+    let dx = 180//getRandomNumberX() - this.sprite.x;
+    let dy =0//getRandomNumberY() - this.sprite.y;
     const length = Math.sqrt(dx * dx + dy * dy);
     return { vx: (dx / length) * this.speed, vy: (dy / length) * this.speed };
   }
@@ -670,6 +687,10 @@ class dagger{
   updateDirection(target){
     this.direction = this.calculateDirection(target);
   }
+  updateRotation(target){
+    console.log("rotation ")
+    this.sprite.rotation = target.sprite.rotation
+  }
   update(delta){
     //console.log(this.sprite.x)
     this.sprite.x += this.direction.vx;
@@ -689,7 +710,7 @@ class WeaponDagger {
     this.player = player
     this.projectileLayer = projectileLayer
     this.enemyLayer = enemyLayer;
-    this.fireRate = 30;
+    this.fireRate = 150;
     this.cooldown = this.fireRate;
   }
   fire(){
@@ -699,6 +720,7 @@ class WeaponDagger {
     //const target = this.enemyLayer.getRandomEnemy();
 
    // projectile.calculateDirection(this.enemyLayer.getRandomEnemy())
+    //projectile.updateRotation(this.player)
     this.projectileLayer.addProjectile(projectile)
    
   }
