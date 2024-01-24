@@ -47,9 +47,6 @@ class Inventory{
 
 //
 //trzeba poprawic bronki przed zrobieniem tego
-class weaponTypes{
-  
-}
 
 class itemTypes {
   static getHPrefill() {
@@ -71,69 +68,6 @@ class itemTypes {
 
 }
 
-class GroundItemsLayer{
-  constructor(){
-    this.container = new PIXI.Container();
-    this.items = [];
-    this.container.x = 0; 
-    this.container.y = 0; 
-    app.stage.addChild(this.container)
-  }
-  update(delta){
-
-  }
-  move(xDelta, yDelta, speed) {
-    const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
-
-    if (length !== 0) {
-      const vx = (xDelta / length) * speed;
-      const vy = (yDelta / length) * speed;
-      this.container.x += vx;
-      this.container.y += vy;
-    }
-  }
-  spawnItem(target) {
-    const spawnMargin = 50;
-    var edge = Math.floor(Math.random() * 4) + 1;
-    var randomX = 90;
-    var randomY = 90;
-
-
-    let enem = itemTypes.getRandomItem();
-    const newEnemy = new GroundItem 
-    this.addEnemy(newEnemy);
-}
-
-  update() {
-    
-  }
-  removeEnemy(enemy){
-    const index = this.enemies.indexOf(enemy);
-    if (index !== -1){
-      this.enemies.splice(index,1)
-      this.container.removeChild(enemy.sprite)
-    }
-  }
-  
-
-
-}
-class Item{
-  constructor(texture){
-    this.sprite = PIXI.Sprite.from(texture);
-    this.sprite.anchor.set(0.5);
-    this.sprite.x =x
-    this.sprite.y =y
-    this.hitbox = new PIXI.Rectangle(x, y, 10, 10);
-    app.stage.addChild(this.sprite);
-  }
-  animate(){
-
-  }
-  update(delta){
-
-  }
-}
 
 
 //======================================================================================
@@ -165,14 +99,17 @@ class Player {
       this.sprite.x - this.sprite.width / 2,
       this.sprite.y - this.sprite.height / 2,
       10,10
-  );
+    );
+    this.luck = 100;
     this.viewport = new PIXI.Rectangle(0,0,app.width, app.height)
     app.stage.addChild(this.sprite);
 
-    
   }
   lvlup(){
 
+  }
+  luckUp(value){
+    this.luck += value
   }
   hpup(value){
     this.HP.setNewHp(value);
@@ -923,6 +860,124 @@ class Background {
     
   }
 }
+//=====================================
+//ITEMS
+//
+
+class coin{
+  constructor(){
+    this.sprite = PIXI.Sprite.from('coin.png')
+    this.sprite.anchor.set(0.5)
+    this.sprite.x = 100
+    this.sprite.y = 100
+    this.durationTime = 1500;
+    this.duration = this.durationTime; 
+    this.hitbox = new PIXI.Rectangle(
+      this.sprite.x - this.sprite.width / 2,
+      this.sprite.y - this.sprite.height / 2,
+      10,10
+  );
+  app.stage.addChild(this.sprite)
+  }
+
+  
+  updateDirection(target){
+    
+  }
+  update(delta){
+    //console.log(this.sprite.x)
+    this.sprite.x += this.direction.vx;
+    this.sprite.y += this.direction.vy;
+    this.hitbox.x = this.sprite.x;
+    this.hitbox.y = this.sprite.y;
+    this.duration -= delta;
+    if (this.duration <= 0) {
+      this.updateDirection()
+      //this.reset();
+    }
+  }
+}
+
+class GroundItemsLayer{
+  constructor(){
+    this.container = new PIXI.Container();
+    this.items = [];
+    this.container.x = 0; 
+    this.container.y = 0; 
+    app.stage.addChild(this.container)
+  }
+  update(delta){
+
+  }
+  move(xDelta, yDelta, speed) {
+    const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
+
+    if (length !== 0) {
+      const vx = (xDelta / length) * speed;
+      const vy = (yDelta / length) * speed;
+      this.container.x += vx;
+      this.container.y += vy;
+    }
+  }
+  spawnItem(target) {
+    const spawnMargin = 50;
+    var edge = Math.floor(Math.random() * 4) + 1;
+    var randomX = 90;
+    var randomY = 90;
+
+
+    let enem = itemTypes.getRandomItem();
+    const newEnemy = new GroundItem 
+    this.addEnemy(newEnemy);
+}
+
+addItem(item) {
+  //console.log("enemy added")
+  this.items.push(item);
+  this.container.addChild(item.sprite);
+}
+  spawnCoin(target){
+    console.log(target)
+    const moneta = new coin();
+    moneta.sprite.x = target.sprite.x;
+    moneta.sprite.y = target.sprite.y
+    this.addItem(moneta)
+  }
+  spawnCoinDummy(){
+    const moneta = new coin();
+    this.addItem(moneta)
+  }
+
+  update() {
+    
+  }
+  removeItem(item){
+    const index = this.items.indexOf(item);
+    if (index !== -1){
+      this.items.splice(index,1)
+      this.container.removeChild(item.sprite)
+    }
+  }
+  
+
+
+}
+class Item{
+  constructor(texture){
+    this.sprite = PIXI.Sprite.from(texture);
+    this.sprite.anchor.set(0.5);
+    this.sprite.x =x
+    this.sprite.y =y
+    this.hitbox = new PIXI.Rectangle(x, y, 10, 10);
+    app.stage.addChild(this.sprite);
+  }
+  animate(){
+
+  }
+  update(delta){
+
+  }
+}
 
 
 class Map{
@@ -931,8 +986,9 @@ class Map{
     this.background = new Background(10,10)
     this.EnemyTimerDuration = 20 
     this.EnemyTimer = this.EnemyTimerDuration;
-    this.EnemyContainer = new EnemyContainer()
     this.groundLayer = new GroundItemsLayer();
+    this.EnemyContainer = new EnemyContainer()
+
     this.player = new Player('player.png', 5);
     //testing
     this.player.hpup(100)
@@ -940,7 +996,7 @@ class Map{
     console.log(this.player.HP.HP)
 
     //tmp
-
+    
 
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
@@ -955,6 +1011,7 @@ class Map{
     this.weapons.push(this.tmpweapon) 
     this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
     this.weapons.push(new WeaponDagger(this.player, this.ProjectileLayer, this.EnemyContainer))
+    //this.moneta = new coin();
 
   }
   drawBackground(){
@@ -991,7 +1048,7 @@ class Map{
       }
  
   });
-
+    this.checkItemCollisions()
     this.checkCollisions()
     this.checkWeaponCollisions()
     let xDelta = 0;
@@ -1034,8 +1091,12 @@ class Map{
               if(enemy.HP.currentHP <=0){
                 //console.log(enemy.HP.currentHP)
                 //EnemyContainer.removeChild()
+                const randomFraction = Math.random();
+                const randomNumber = Math.floor(randomFraction * 1000) + 1;
+                if(randomNumber <this.player.luck){
+                  this.groundLayer.spawnCoin(enemy)
 
-
+                }
                 // tutaj drop
                 this.EnemyContainer.removeEnemy(enemy)
                 //console.log("it's over")
@@ -1050,6 +1111,19 @@ class Map{
         }
         }
     }
+  checkItemCollisions(){
+    const playerGlobalBounds = this.player.sprite.getBounds();
+    for (const item of this.groundLayer.items){
+      const itemGlobalBounds = item.sprite.getBounds();
+      if (this.hitTestRectangle(playerGlobalBounds,itemGlobalBounds)) {
+        //console.log('Collision with enemy!');
+        //
+        this.groundLayer.removeItem(item)
+        console.log("touch")
+
+    }
+    }
+  }
   
 
   checkCollisions() {
