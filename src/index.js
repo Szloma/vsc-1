@@ -84,6 +84,7 @@ class Player {
   autoheal(){
     this.HP.increaseHP(this.autoHealValue)
   }
+
   update(delta){
     //console.log(this.HP.HP)
     this.autoheal()
@@ -1158,9 +1159,10 @@ class Map{
     this.background = new Background(10,10)
     this.EnemyTimerDuration = 20 
     this.EnemyTimer = this.EnemyTimerDuration;
+    this.treasureTimer = 4000;
     this.groundLayer = new GroundItemsLayer();
     this.xplayer = new xpLayer()
-    this.treasurlayer = new treasureLayer();
+    this.treasurelayer = new treasureLayer();
     this.EnemyContainer = new EnemyContainer()
 
     this.player = new Player('player.png', 5);
@@ -1180,17 +1182,9 @@ class Map{
     this.weapons.push(this.tmpweapon) 
     this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
     this.weapons.push(new WeaponDagger(this.player, this.ProjectileLayer, this.EnemyContainer))
-    this.treasurlayer.spawnTreasure()
+    this.treasurelayer.spawnTreasure()
   }
-  drawBackground(){
 
-  }
-  updateWeaponTimers(delta){
-    for (const projectile of this.ProjectileLayer.projectiles) {
-      //console.log(projectile)
-    }
-    this.weaponTimer.update(delta)
-  }
   updateWeapons(delta){
     for (const weapon of this.weapons) {
       weapon.update(delta)
@@ -1208,6 +1202,8 @@ class Map{
       this.EnemyContainer.spawnEnemy(this.enemy1)
       this.EnemyTimer= this.EnemyTimerDuration;
     }
+    //spawning treasures
+    this.spawnTreasure(delta)
 
     this.player.update(delta)
     this.EnemyContainer.enemies.forEach((enemy) => {
@@ -1223,6 +1219,7 @@ class Map{
     this.checkCollisions()
     this.checkWeaponCollisions()
     this.checkxpCollisions()
+    this.checkTreasureCollisions()
     let xDelta = 0;
     let yDelta = 0;
   
@@ -1242,12 +1239,34 @@ class Map{
     this.groundLayer.move(xDelta, yDelta, this.player.speed);
     this.background.update(xDelta,yDelta,this.player.speed)
     this.xplayer.move(xDelta, yDelta, this.player.speed);
-    this.treasurlayer.move(xDelta, yDelta, this.player.speed);
+    this.treasurelayer.move(xDelta, yDelta, this.player.speed);
 
     //this.EnemyContainer.x = Math.max(0, Math.min(app.screen.width, this.sprite.x));
     //this.EnemyContainer.y = Math.max(0, Math.min(app.screen.height, this.sprite.y));
   }
+  spawnTreasure(delta){
+    this.treasureTimer -= delta;
+    console.log(this.treasureTimer)
+    if (this.treasureTimer <= 0) {
+      const randomFraction = 1000;
+      const randomNumber = Math.floor(randomFraction * 6000) + 1;
+      console.log("spawned treasure")
+      this.treasurelayer.spawnTreasure()
 
+      this.treasureTimer=randomNumber;
+    }
+
+  }
+  checkTreasureCollisions(){
+    const playerGlobalBounds = this.player.sprite.getBounds();
+    for (const treasure of this.treasurelayer.items){
+      const treasureGlobalBounds = treasure.sprite.getBounds();
+      if (this.hitTestRectangle(playerGlobalBounds,treasureGlobalBounds)) {
+        this.treasurelayer.removeItem(treasure)
+        
+    }
+    }
+  }
   checkWeaponCollisions(){
     
     for (const projectile of this.ProjectileLayer.projectiles) {
