@@ -23,18 +23,6 @@ function getRandomNumberY() {
   return randomNumber;
 }
 
-
-
-
-class rangedWeapon {
-  constructor()
-  {
-    this.projectiles = [];
-  }
-  shoot(player, target){
-  }
-}
-
 //todo
 class Inventory{
   constructor(){
@@ -47,6 +35,32 @@ class Inventory{
 // Player
 
 //
+
+class XpLevels {
+  constructor() {
+    this.levels = [100, 250, 500, 1000];
+    while (this.levels.length < 10) {
+      const lastXp = this.levels[this.levels.length - 1];
+      this.levels.push(lastXp * 2);
+    }
+    this.currentLevel = 1;
+  }
+  getCurrentLevel() {
+    return this.currentLevel;
+  }
+  getCurrentLevelXp() {
+    return this.levels[this.currentLevel - 1];
+  }
+  levelUp() {
+    if (this.currentLevel < 10) {
+      this.currentLevel++;
+      return true;
+    } else {
+      return false; 
+    }
+  }
+}
+
 class Player {
   constructor(texture, speed){
     this.sprite = PIXI.Sprite.from(texture);
@@ -54,8 +68,10 @@ class Player {
     this.sprite.x = app.screen.width / 2;
     this.sprite.y = app.screen.height / 2;
     this.speed = speed;
+
     this.HP = new HP(100,50);
     this.autoHealValue = 0.01;
+
     this.inventory = new Inventory(); // to do
     this.hitbox = new PIXI.Rectangle(
       this.sprite.x - this.sprite.width / 2,
@@ -68,6 +84,7 @@ class Player {
       100,100
     );
     this.luck = 100;
+    this.xpBar = new progressBar(100,90);
     this.viewport = new PIXI.Rectangle(0,0,app.width, app.height)
     app.stage.addChild(this.sprite);
 
@@ -87,6 +104,9 @@ class Player {
   autoheal(){
     this.HP.increaseHP(this.autoHealValue)
   }
+  collectXP(){
+    this.xpBar.addXP()
+  }
 
   update(delta){
     //console.log(this.HP.HP)
@@ -100,8 +120,52 @@ class Player {
   
 }
 class progressBar{
-  constructor(maxProgres, widthPercent){
+  constructor(maxProgress, widthPercent){
+    this.playerXp = new XpLevels();
+    console.log("level =")
+   
+    this.maxProgress = this.playerXp.getCurrentLevelXp();
+    this.currentProgress = 0;
+    this.barBack = PIXI.Sprite.from("xpbarback.png")
+    this.barBack.width = calculateAmountFromPercentage(widthPercent, app.screen.width)+20
+    this.barBack.height = 20;
+    this.barBack.x = 10;
+    this.barBack.y = 10;
+    
+    this.barFront = PIXI.Sprite.from("xpbarfront.png")
+    this.barFront.width = 0//calculateAmountFromPercentage(widthPercent, app.screen.width)
+    this.barFront.height = 10;
+    this.barFront.x = 20
+    this.barFront.y = 15
 
+    this.barWidth = calculateAmountFromPercentage(widthPercent, app.screen.width)
+
+    app.stage.addChild(this.barBack);
+    app.stage.addChild(this.barFront)
+  }
+  updateBar(){
+    const percentage = calculatePercentage(this.currentProgress, this.maxProgress)
+    const barWidth = calculateAmountFromPercentage(percentage, this.barWidth)
+
+    this.barFront.width = barWidth;
+  }
+  addXP(){
+    const value = 10;
+
+    if((this.currentProgress + value)>this.maxProgress){
+      this.currentProgress = 0;
+      this.playerXp.levelUp()
+      this.maxProgress = this.playerXp.getCurrentLevelXp()
+      console.log("maxprogress")
+      console.log(this.maxProgress)
+      this.updateBar()
+    }
+    if(this.currentProgress<this.maxProgress){
+
+      this.currentProgress += value;
+      this.updateBar()
+    }
+    this.updateBar()
   }
 }
 
@@ -111,12 +175,12 @@ class HP {
     this.HP = this.maxHP;
     this.dead = false;
     this.hpBarBack = PIXI.Sprite.from("hpbarback.png")
-    this.hpBarBack.x = 0;
+    this.hpBarBack.x = 10;
     this.hpBarBack.y = 40;
     this.hpBarBack.width = calculateAmountFromPercentage(widthPercent, app.screen.width)+20
     this.hpBarBack.height = 20;
     this.hpBarFront = PIXI.Sprite.from("hpbarfront.png")
-    this.hpBarFront.x = 10;
+    this.hpBarFront.x = 20;
     this.hpBarFront.y = 45;
     this.barWidth = calculateAmountFromPercentage(widthPercent, app.screen.width);
     this.hpBarFront.width = this.barWidth
@@ -1353,6 +1417,7 @@ class Map{
       if (this.hitTestRectangle(playerGlobalBounds,xpGlobalBounds)) {
         //console.log('Collision with enemy!');
         //
+        this.player.collectXP()
         this.xplayer.removeItem(xp)
         console.log("touch")
 
