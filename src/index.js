@@ -41,42 +41,6 @@ class Inventory{
     this.inventory = [];
   }
 }
-//======================================================================================
-
-// Ground layer
-
-//
-//trzeba poprawic bronki przed zrobieniem tego
-
-class itemTypes {
-  static getHPrefill() {
-      return {
-          spriteTexture: "item1.png",
-          speed: 0,
-          health: 100,
-      };
-  }
-
-  static getRandomItem() {
-    const itemTypeList = [
-        this.getHPrefill()
-    ];
-
-    const randomIndex = Math.floor(Math.random() * itemTypeList.length);
-    return itemTypeList[randomIndex];
-}
-
-}
-
-
-
-//======================================================================================
-
-// Weapons
-
-//
-
-
 
 //======================================================================================
 
@@ -85,7 +49,6 @@ class itemTypes {
 //
 class Player {
   constructor(texture, speed){
-
     this.sprite = PIXI.Sprite.from(texture);
     this.sprite.anchor.set(0.5);
     this.sprite.x = app.screen.width / 2;
@@ -94,11 +57,15 @@ class Player {
     this.HP = new HP(100,50);
     this.autoHealValue = 0.01;
     this.inventory = new Inventory(); // to do
-
     this.hitbox = new PIXI.Rectangle(
       this.sprite.x - this.sprite.width / 2,
       this.sprite.y - this.sprite.height / 2,
       10,10
+    );
+    this.reachSize = new PIXI.Rectangle(
+      this.sprite.x - this.sprite.width / 2,
+      this.sprite.y - this.sprite.height / 2,
+      100,100
     );
     this.luck = 100;
     this.viewport = new PIXI.Rectangle(0,0,app.width, app.height)
@@ -128,6 +95,12 @@ class Player {
   }
   
 }
+class progressBar{
+  constructor(maxProgres, widthPercent){
+
+  }
+}
+
 class HP {
   constructor(maxHP, widthPercent){
     this.maxHP = maxHP;
@@ -135,14 +108,15 @@ class HP {
     this.dead = false;
     this.hpBarBack = PIXI.Sprite.from("hpbarback.png")
     this.hpBarBack.x = 0;
-    this.hpBarBack.y = 0;
+    this.hpBarBack.y = 40;
     this.hpBarBack.width = calculateAmountFromPercentage(widthPercent, app.screen.width)+20
-
+    this.hpBarBack.height = 20;
     this.hpBarFront = PIXI.Sprite.from("hpbarfront.png")
     this.hpBarFront.x = 10;
-    this.hpBarFront.y = 10;
+    this.hpBarFront.y = 45;
     this.barWidth = calculateAmountFromPercentage(widthPercent, app.screen.width);
     this.hpBarFront.width = this.barWidth
+    this.hpBarFront.height = 10
     //console.log(this.hpBarFront.width)
     app.stage.addChild(this.hpBarBack)
     app.stage.addChild(this.hpBarFront);
@@ -958,24 +932,116 @@ addItem(item) {
       this.container.removeChild(item.sprite)
     }
   }
-  
-
-
 }
-class Item{
-  constructor(texture){
-    this.sprite = PIXI.Sprite.from(texture);
-    this.sprite.anchor.set(0.5);
-    this.sprite.x =x
-    this.sprite.y =y
-    this.hitbox = new PIXI.Rectangle(x, y, 10, 10);
-    app.stage.addChild(this.sprite);
-  }
-  animate(){
 
+class xpLayer{
+  constructor(){
+    this.container = new PIXI.Container();
+    this.items = [];
+    this.container.x = 0; 
+    this.container.y = 0; 
+    app.stage.addChild(this.container)
+  }
+  move(xDelta, yDelta, speed) {
+    const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
+
+    if (length !== 0) {
+      const vx = (xDelta / length) * speed;
+      const vy = (yDelta / length) * speed;
+      this.container.x += vx;
+      this.container.y += vy;
+    }
+  }
+  spawnItem(target) {
+    const spawnMargin = 50;
+    var edge = Math.floor(Math.random() * 4) + 1;
+    var randomX = 90;
+    var randomY = 90;
+
+
+    let enem = itemTypes.getRandomItem();
+    const newEnemy = new GroundItem 
+    this.addEnemy(newEnemy);
+}
+
+addItem(item) {
+  //console.log("enemy added")
+  this.items.push(item);
+  this.container.addChild(item.sprite);
+}
+  spawnxp(target){
+    const xp = new XP();
+    xp.sprite.x = target.sprite.x;
+    xp.sprite.y = target.sprite.y
+    this.addItem(xp)
+  }
+  spawnxpDummy(){
+    const xp = new xp();
+    this.addItem(xp)
+  }
+
+  update() {
+    
+  }
+  removeItem(item){
+    const index = this.items.indexOf(item);
+    if (index !== -1){
+      this.items.splice(index,1)
+      this.container.removeChild(item.sprite)
+    }
+  }
+}
+class XP{
+  constructor(){
+    this.sprite = PIXI.Sprite.from('xp.png')
+    this.sprite.anchor.set(0.5)
+    this.sprite.x = 100
+    this.sprite.y = 100
+    this.durationTime = 1500;
+    this.duration = this.durationTime; 
+    this.hitbox = new PIXI.Rectangle(
+      this.sprite.x - this.sprite.width / 2,
+      this.sprite.y - this.sprite.height / 2,
+      10,10
+  );
+      this.speed = 10;
+  app.stage.addChild(this.sprite)
+  }
+  chasePlayer() {
+    //const playerGlobalBounds = player.sprite.getBounds();
+    const playerX = app.screen.width/2
+    const playerY =  app.screen.height/2
+
+    const dx = playerX - this.sprite.getBounds().x;
+    const dy = playerY - this.sprite.getBounds().y;
+
+
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const vx = (dx / length) * this.speed;
+    const vy = (dy / length) * this.speed;
+
+    this.sprite.x += vx;
+    this.sprite.y += vy;
+
+    this.hitbox.x = this.sprite.x;
+    this.hitbox.y = this.sprite.y;
+}
+
+  
+  updateDirection(target){
+    
   }
   update(delta){
-
+    //console.log(this.sprite.x)
+    this.sprite.x += this.direction.vx;
+    this.sprite.y += this.direction.vy;
+    this.hitbox.x = this.sprite.x;
+    this.hitbox.y = this.sprite.y;
+    this.duration -= delta;
+    if (this.duration <= 0) {
+      this.updateDirection()
+      //this.reset();
+    }
   }
 }
 
@@ -987,6 +1053,7 @@ class Map{
     this.EnemyTimerDuration = 20 
     this.EnemyTimer = this.EnemyTimerDuration;
     this.groundLayer = new GroundItemsLayer();
+    this.xplayer = new xpLayer()
     this.EnemyContainer = new EnemyContainer()
 
     this.player = new Player('player.png', 5);
@@ -1011,7 +1078,7 @@ class Map{
     this.weapons.push(this.tmpweapon) 
     this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
     this.weapons.push(new WeaponDagger(this.player, this.ProjectileLayer, this.EnemyContainer))
-    //this.moneta = new coin();
+    this.xp = new XP();
 
   }
   drawBackground(){
@@ -1046,11 +1113,15 @@ class Map{
       if(enemy.currentHP!=0){
         enemy.chasePlayer(this.player);
       }
- 
-  });
+    });
+    this.xplayer.items.forEach((item)=>{
+      item.chasePlayer()
+    })
+
     this.checkItemCollisions()
     this.checkCollisions()
     this.checkWeaponCollisions()
+    this.checkxpCollisions()
     let xDelta = 0;
     let yDelta = 0;
   
@@ -1069,7 +1140,7 @@ class Map{
     this.EnemyContainer.move(xDelta, yDelta, this.player.speed);
     this.groundLayer.move(xDelta, yDelta, this.player.speed);
     this.background.update(xDelta,yDelta,this.player.speed)
-   
+    this.xplayer.move(xDelta, yDelta, this.player.speed);
 
     //this.EnemyContainer.x = Math.max(0, Math.min(app.screen.width, this.sprite.x));
     //this.EnemyContainer.y = Math.max(0, Math.min(app.screen.height, this.sprite.y));
@@ -1097,6 +1168,7 @@ class Map{
                   this.groundLayer.spawnCoin(enemy)
 
                 }
+                this.xplayer.spawnxp(enemy)
                 // tutaj drop
                 this.EnemyContainer.removeEnemy(enemy)
                 //console.log("it's over")
@@ -1111,6 +1183,7 @@ class Map{
         }
         }
     }
+  
   checkItemCollisions(){
     const playerGlobalBounds = this.player.sprite.getBounds();
     for (const item of this.groundLayer.items){
@@ -1124,7 +1197,19 @@ class Map{
     }
     }
   }
-  
+  checkxpCollisions(){
+    const playerGlobalBounds = this.player.sprite.getBounds();
+    for (const xp of this.xplayer.items){
+      const xpGlobalBounds = xp.sprite.getBounds();
+      if (this.hitTestRectangle(playerGlobalBounds,xpGlobalBounds)) {
+        //console.log('Collision with enemy!');
+        //
+        this.xplayer.removeItem(xp)
+        console.log("touch")
+
+    }
+  }
+}
 
   checkCollisions() {
     const playerGlobalBounds = this.player.sprite.getBounds();
