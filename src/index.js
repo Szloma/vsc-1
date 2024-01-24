@@ -1044,6 +1044,112 @@ class XP{
     }
   }
 }
+class Treasure{
+  constructor(){
+    this.sprite = PIXI.Sprite.from('chest.png')
+    this.sprite.anchor.set(0.5)
+    this.sprite.x = 100
+    this.sprite.y = 100
+    this.durationTime = 1500;
+    this.duration = this.durationTime; 
+    this.hitbox = new PIXI.Rectangle(
+      this.sprite.x - this.sprite.width / 2,
+      this.sprite.y - this.sprite.height / 2,
+      10,10
+  );
+  app.stage.addChild(this.sprite)
+  }
+}
+class treasureLayer{
+  constructor(player){
+    this.player = player;
+    this.container = new PIXI.Container();
+    this.items = [];
+    this.container.x = 0; 
+    this.container.y = 0; 
+    this.absoluteX = 0 
+    this.absoluteY = 0 
+    app.stage.addChild(this.container)
+  }
+  update(delta){
+
+  }
+  move(xDelta, yDelta, speed) {
+    const length = Math.sqrt(xDelta ** 2 + yDelta ** 2);
+
+    if (length !== 0) {
+      const vx = (xDelta / length) * speed;
+      const vy = (yDelta / length) * speed;
+      this.absoluteX += vx;
+      this.absoluteY += vy;
+      this.randomX = 0
+      this.randomY= 0
+      this.container.x += vx;
+      this.container.y += vy;
+    }
+  }
+
+  addItem(item) {
+    this.items.push(item);
+    this.container.addChild(item.sprite);
+  }
+  spawnTreasure(){
+///
+   
+const spawnMargin = 50;
+    var edge =  Math.floor(Math.random() * 4) + 1;
+    if(this.container.x !== undefined){
+      switch (edge) {
+        case 1:
+          
+          this.randomX = -this.absoluteX - spawnMargin
+          this.randomY = -this.absoluteY + getRandomNumberY()
+
+          break;
+        case 2:
+          this.randomX = getRandomNumberX() -this.absoluteX
+          this.randomY =-this.absoluteY - spawnMargin
+          break
+        case 3:
+          this.randomX = -this.absoluteX + app.screen.width+spawnMargin
+          this.randomY = -this.absoluteY+ getRandomNumberY()
+          break;
+        case 4:
+          this.randomX = getRandomNumberX() -this.absoluteX
+          this.randomY = app.screen.height- this.absoluteY+spawnMargin;
+          break;
+        default:
+          this.randomX = 0;
+          this.randomY = 0;
+      }
+  
+      //let enem = enemyTypes.getRandomEnemy();
+      //const newEnemy = new Enemy(enem.spriteTexture, enem.speed,  enem.health,this.randomX, this.randomY)
+      //newEnemy.updateCoordinates(this.randomX, this.randomY)
+    
+///
+      const treasure = new Treasure();
+      treasure.sprite.x = this.randomX
+      treasure.sprite.y = this.randomY;
+      this.addItem(treasure)
+  }
+  }
+  spawnCoinDummy(){
+    const moneta = new coin();
+    this.addItem(moneta)
+  }
+
+  update() {
+    
+  }
+  removeItem(item){
+    const index = this.items.indexOf(item);
+    if (index !== -1){
+      this.items.splice(index,1)
+      this.container.removeChild(item.sprite)
+    }
+  }
+}
 
 
 class Map{
@@ -1054,16 +1160,12 @@ class Map{
     this.EnemyTimer = this.EnemyTimerDuration;
     this.groundLayer = new GroundItemsLayer();
     this.xplayer = new xpLayer()
+    this.treasurlayer = new treasureLayer();
     this.EnemyContainer = new EnemyContainer()
 
     this.player = new Player('player.png', 5);
     //testing
     this.player.hpup(100)
-    console.log("inithp")
-    console.log(this.player.HP.HP)
-
-    //tmp
-    
 
     //app.stage.addChild(this.EnemyContainer.container);
     this.ProjectileLayer = new projectileLayer;
@@ -1078,8 +1180,7 @@ class Map{
     this.weapons.push(this.tmpweapon) 
     this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
     this.weapons.push(new WeaponDagger(this.player, this.ProjectileLayer, this.EnemyContainer))
-    this.xp = new XP();
-
+    this.treasurlayer.spawnTreasure()
   }
   drawBackground(){
 
@@ -1141,6 +1242,7 @@ class Map{
     this.groundLayer.move(xDelta, yDelta, this.player.speed);
     this.background.update(xDelta,yDelta,this.player.speed)
     this.xplayer.move(xDelta, yDelta, this.player.speed);
+    this.treasurlayer.move(xDelta, yDelta, this.player.speed);
 
     //this.EnemyContainer.x = Math.max(0, Math.min(app.screen.width, this.sprite.x));
     //this.EnemyContainer.y = Math.max(0, Math.min(app.screen.height, this.sprite.y));
