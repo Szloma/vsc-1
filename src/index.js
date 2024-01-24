@@ -81,6 +81,9 @@ class Player {
   hpup(value){
     this.HP.setNewHp(value);
   }
+  hpRefill(value){
+    this.HP.increaseHP(value)
+  }
   autoheal(){
     this.HP.increaseHP(this.autoHealValue)
   }
@@ -1064,6 +1067,11 @@ class Treasure{
 class treasureLayer{
   constructor(player){
     this.player = player;
+    //types of buffs
+    this.heal = 50;
+    this.hpUp = 50;
+    this.luckUp = 10;
+
     this.container = new PIXI.Container();
     this.items = [];
     this.container.x = 0; 
@@ -1246,7 +1254,6 @@ class Map{
   }
   spawnTreasure(delta){
     this.treasureTimer -= delta;
-    console.log(this.treasureTimer)
     if (this.treasureTimer <= 0) {
       const randomFraction = 1000;
       const randomNumber = Math.floor(randomFraction * 6000) + 1;
@@ -1262,10 +1269,31 @@ class Map{
     for (const treasure of this.treasurelayer.items){
       const treasureGlobalBounds = treasure.sprite.getBounds();
       if (this.hitTestRectangle(playerGlobalBounds,treasureGlobalBounds)) {
+        this.randomBuff()
         this.treasurelayer.removeItem(treasure)
-        
+
     }
     }
+  }
+  randomBuff(){
+    var buffType =  3//Math.floor(Math.random() * 4) + 1;
+      switch (buffType) {
+        case 1:
+          console.log("playerbuff")
+          break;
+        case 2:
+          console.log("randomwandbuff")
+          break
+        case 3:
+          console.log("hprefill")
+          this.player.hpRefill(this.treasurelayer.heal)
+          break
+        case 4:
+          console.log("new wand")
+          break
+        default:
+          console.log("both")
+      }
   }
   checkWeaponCollisions(){
     
