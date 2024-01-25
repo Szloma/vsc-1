@@ -61,6 +61,37 @@ class XpLevels {
   }
 }
 
+class coinDisplay {
+  constructor() {
+    this.coins = 0;
+
+    this.container = new PIXI.Container();
+    this.container.position.set(app.screen.width - 120,35); 
+
+    this.coinText = new PIXI.Text(`Coins: ${this.coins}`, { fill: 'white' });
+    this.container.addChild(this.coinText);
+    app.stage.addChild(this.container);
+  }
+
+  setCoins(amount) {
+    this.coins = amount;
+    this.updateDisplay();
+  }
+  addCoin(){
+    this.coins +=1;
+    this.updateDisplay();
+  }
+  addCoins(amount) {
+    this.coins += amount;
+    this.updateDisplay();
+  }
+
+  updateDisplay() {
+    this.coinText.text = `Coins: ${this.coins}`;
+  }
+}
+
+
 class Player {
   constructor(texture, speed){
     this.sprite = PIXI.Sprite.from(texture);
@@ -68,6 +99,8 @@ class Player {
     this.sprite.x = app.screen.width / 2;
     this.sprite.y = app.screen.height / 2;
     this.speed = speed;
+
+    this.coindisplay = new coinDisplay();
 
     this.HP = new HP(100,50);
     this.autoHealValue = 0.01;
@@ -88,6 +121,9 @@ class Player {
     this.viewport = new PIXI.Rectangle(0,0,app.width, app.height)
     app.stage.addChild(this.sprite);
 
+  }
+  addCoin(){
+    this.coindisplay.addCoin()
   }
   lvlup(){
 
@@ -921,11 +957,12 @@ class coin{
   );
   app.stage.addChild(this.sprite)
   }
-
-  
-  updateDirection(target){
-    
+  changePlacement(x,y){
+    //only for gui
+    this.sprite.x = x;
+    this.sprite.y = y;
   }
+
   update(delta){
     //console.log(this.sprite.x)
     this.sprite.x += this.direction.vx;
@@ -1404,6 +1441,7 @@ class Map{
       if (this.hitTestRectangle(playerGlobalBounds,itemGlobalBounds)) {
         //console.log('Collision with enemy!');
         //
+        this.player.addCoin()
         this.groundLayer.removeItem(item)
         console.log("touch")
 
