@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 
-const app = new PIXI.Application({ background: '#509B66', resizeTo: window });
+const app = new PIXI.Application({ background: '#A5AC57', resizeTo: window });
 
 document.body.appendChild(app.view);
 
@@ -96,6 +96,8 @@ class Player {
   constructor(texture, speed){
     this.sprite = PIXI.Sprite.from(texture);
     this.sprite.anchor.set(0.5);
+    this.sprite.width = 72;
+    this.sprite.height =72;
     this.sprite.x = app.screen.width / 2;
     this.sprite.y = app.screen.height / 2;
     this.speed = speed;
@@ -147,7 +149,7 @@ class Player {
   update(delta){
     //console.log(this.HP.HP)
     this.autoheal()
-    this.sprite.rotation+= 0.1 * delta;
+    //this.sprite.rotation+= 0.1 * delta;
     
   }
   getPlayer(){
@@ -876,8 +878,27 @@ class Background {
     //this.container.anchorY = 1000;
     this.tileTextures = [
       PIXI.Texture.from('Grass1.png'),
-      PIXI.Texture.from('Grass2.png'),
-      PIXI.Texture.from('Grass3.png'),
+      //PIXI.Texture.from('Grass2.png'),
+      //PIXI.Texture.from('Grass3.png'),
+      PIXI.Texture.from('Grass4.png'),
+      //PIXI.Texture.from('Grass5.png'),
+      PIXI.Texture.from('Grass6.png'),
+      PIXI.Texture.from('Grass7.png'),
+      PIXI.Texture.from('Grass8.png'),
+      PIXI.Texture.from('Grass9.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
+      PIXI.Texture.from('Empty.png'),
   ];
     this.tileSize = 64;
     this.columns = Math.ceil(this.backgroundWidth / this.tileSize);
@@ -1261,6 +1282,103 @@ const spawnMargin = 50;
   }
 }
 
+class DifficultyLevels {
+  constructor() {
+    this.levels = [100, 250, 500, 1000];
+    while (this.levels.length < 10) {
+      const lastXp = this.levels[this.levels.length - 1];
+      this.levels.push(lastXp * 2);
+    }
+    this.currentLevel = 1;
+  }
+  getCurrentLevel() {
+    return this.currentLevel;
+  }
+  getCurrentLevelXp() {
+    return this.levels[this.currentLevel - 1];
+  }
+  levelUp() {
+    if (this.currentLevel < 10) {
+      this.currentLevel++;
+      return true;
+    } else {
+      return false; 
+    }
+  }
+}
+
+
+class PopupMenu {
+  constructor(app, buttonTexts, buttonActions) {
+    this.app = app;
+    this.buttonTexts = buttonTexts;
+    this.buttonActions = buttonActions;
+
+    // Create a PIXI container for the pop-up menu
+    this.container = new PIXI.Container();
+    this.container.position.set(app.screen.width / 2, app.screen.height / 2); // Centered position
+
+    // Create buttons
+    this.buttons = [];
+    for (let i = 0; i < buttonTexts.length; i++) {
+      const button = this.createButton(buttonTexts[i], buttonActions[i]);
+      button.position.y = i * 50; // Adjust vertical spacing as needed
+      this.buttons.push(button);
+      this.container.addChild(button);
+    }
+
+    // Add the container to the stage
+    app.stage.addChild(this.container);
+
+    // Hide the menu initially
+    this.container.visible = false;
+  }
+
+  createButton(text, action) {
+    const button = new PIXI.Graphics();
+    button.beginFill(0x3498db);
+    button.drawRect(0, 0, 100, 40);
+    button.endFill();
+
+    const buttonText = new PIXI.Text(text, { fill: 'white' });
+    buttonText.position.set((button.width - buttonText.width) / 2, (button.height - buttonText.height) / 2);
+    button.addChild(buttonText);
+
+    button.interactive = true;
+    button.buttonMode = true;
+
+    button.on('pointertap', () => {
+      action();
+      this.hide();
+    });
+
+    return button;
+  }
+
+  show() {
+    this.container.visible = true;
+  }
+
+  hide() {
+    this.container.visible = false;
+  }
+}
+
+
+class Shadow{
+  constructor(target){
+    this.target = target;
+    this.sprite = PIXI.Sprite.from("shadow.png");
+    this.sprite.anchor.set(0.5);
+    this.sprite.x = (app.screen.width / 2);
+    this.sprite.y = (app.screen.height / 2)+10;
+    app.stage.addChild(this.sprite)
+  }
+  update(){
+    this.sprite.x = target.sprite.x;
+    this.sprite.y = target.sprite.y;
+  }
+}
 
 class Map{
   constructor(backTexture){
@@ -1274,6 +1392,7 @@ class Map{
     this.treasurelayer = new treasureLayer();
     this.EnemyContainer = new EnemyContainer()
 
+    this.playerShadow = new Shadow(this.player)
     this.player = new Player('player.png', 5);
     //testing
     this.player.hpup(100)
@@ -1292,6 +1411,28 @@ class Map{
     this.weapons.push(new WeaponWand(this.player, this.ProjectileLayer, this.EnemyContainer)) 
     this.weapons.push(new WeaponDagger(this.player, this.ProjectileLayer, this.EnemyContainer))
     this.treasurelayer.spawnTreasure()
+
+    this.popupMenus = [];
+    //menu ulepszen
+    
+
+
+// Show the menu
+
+  }
+  showPopupMenu(){
+    const buttonTexts = ['HPrefill', 'New Wand', 'Wand Upgrade'];
+    const buttonActions = [
+      () => console.log('Button 1 clicked!'),
+      () => alert('Button 2 clicked!'),
+      () => {
+        console.log('Button 3 clicked!');
+        // Perform other arbitrary action
+      },
+    ];
+
+    const popupMenu = new PopupMenu(app, buttonTexts, buttonActions);
+    this.popupMenus.push(popupMenu)
   }
 
   updateWeapons(delta){
@@ -1300,7 +1441,10 @@ class Map{
     }
   }
   
+  
   update(delta){
+    
+
     this.updateWeapons(delta)
     this.ProjectileLayer.update(delta)
 
